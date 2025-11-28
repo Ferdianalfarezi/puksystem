@@ -1,6 +1,6 @@
 <!-- REJECT Modal -->
-<div id="rejectModal" class="fixed inset-0 hidden items-center justify-center z-50 p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all">
+<div id="rejectModal" class="fixed inset-0 hidden items-center justify-center z-50 p-4 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-95">
         <!-- Modal Header -->
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-red-50 rounded-t-2xl">
             <div class="flex items-center space-x-3">
@@ -60,3 +60,13 @@
         </form>
     </div>
 </div>
+
+<style>
+#rejectModal.active {
+    opacity: 1;
+}
+
+#rejectModal.active > div {
+    transform: scale(1);
+}
+</style>

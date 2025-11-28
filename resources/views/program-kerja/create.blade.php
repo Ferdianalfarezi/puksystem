@@ -57,11 +57,35 @@
 
             <!-- Tahun -->
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Tahun <span class="text-red-500">*</span></label>
-                <input type="number" id="createTahun" name="tahun" required min="2000" max="2100"
-                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
-                    placeholder="{{ date('Y') }}" value="{{ date('Y') }}">
-                <span class="text-red-500 text-sm error-message" id="error-create-tahun"></span>
+                <label for="tahun" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Tahun <span class="text-red-500">*</span>
+                </label>
+                <input 
+                    type="number" 
+                    id="tahun" 
+                    name="tahun"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
+                    placeholder="Contoh: 2024"
+                    min="2000"
+                    max="2100"
+                    required
+                >
+                <span class="text-red-500 text-xs error-message" id="error-create-tahun"></span>
+            </div>
+
+            <!-- Tanggal -->
+            <div>
+                <label for="tanggal" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Tanggal Pelaksanaan <span class="text-red-500">*</span>
+                </label>
+                <input 
+                    type="date" 
+                    id="tanggal" 
+                    name="tanggal"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
+                    required
+                >
+                <span class="text-red-500 text-xs error-message" id="error-create-tanggal"></span>
             </div>
 
             <!-- Info Box -->

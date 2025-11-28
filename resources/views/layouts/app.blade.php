@@ -369,7 +369,7 @@
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span>Konfirmasi Bendahara</span>
+                            <span>Program Kerja</span>
                         </a>
                     @endif
 
@@ -415,6 +415,38 @@
                     @endif
                 </div>
             </div>
+            @endif
+
+            <!-- Menu Pencairan (untuk Bendahara & Superadmin) -->
+            @if(in_array($userRole, ['bendahara', 'superadmin']))
+            <a href="{{ route('pencairan.index') }}" 
+            class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('pencairan.*') ? 'active' : '' }}"
+            :title="sidebarCollapsed ? 'Pencairan Dana' : ''">
+                <div class="w-5 h-5 mr-3 flex-shrink-0">
+                    <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <span class="sidebar-text font-medium" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
+                    Pencairan Dana
+                </span>
+            </a>
+            @endif
+
+            <!-- Menu History (untuk Semua Role termasuk admin bidang) -->
+            @if(in_array($userRole, ['superadmin', 'bendahara', 'sekretaris', 'ketua', 'admin']))
+            <a href="{{ route('history.program-kerja') }}" 
+            class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('history.*') ? 'active' : '' }}"
+            :title="sidebarCollapsed ? 'History' : ''">
+                <div class="w-5 h-5 mr-3 flex-shrink-0">
+                    <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <span class="sidebar-text font-medium" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
+                    History
+                </span>
+            </a>
             @endif
 
             <!-- Divider -->

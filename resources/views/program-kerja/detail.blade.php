@@ -79,6 +79,18 @@
                         </div>
                     </div>
 
+                    <!-- Tanggal -->
+                    <div class="flex border-b border-gray-100 pb-4">
+                        <div class="w-1/3">
+                            <p class="text-sm font-semibold text-gray-600">Tanggal Pelaksanaan</p>
+                        </div>
+                        <div class="w-2/3">
+                            <p class="text-base text-gray-900 font-medium">
+                                {{ $programKerja->tanggal ? $programKerja->tanggal->format('d M Y') : '-' }}
+                            </p>
+                        </div>
+                    </div>
+
                     <!-- Status -->
                     <div class="flex">
                         <div class="w-1/3">
@@ -90,7 +102,8 @@
                                     'draft' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'label' => 'Draft'],
                                     'menunggu_konfirmasi_bendahara' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-800', 'label' => 'Menunggu Bendahara'],
                                     'menunggu_approval_ketua' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'label' => 'Menunggu Ketua'],
-                                    'disetujui' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'label' => 'Disetujui'],
+                                    'menunggu_pencairan' => ['bg' => 'bg-purple-100', 'text' => 'text-purple-800', 'label' => 'Menunggu Pencairan'],
+                                    'dicairkan' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'label' => 'Dicairkan'],
                                     'ditolak_bendahara' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'label' => 'Ditolak Bendahara'],
                                     'ditolak_ketua' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'label' => 'Ditolak Ketua'],
                                 ];
@@ -103,6 +116,80 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Card: Informasi Pencairan (jika sudah dicairkan) -->
+            @if($programKerja->status === 'dicairkan' && $programKerja->pencairan)
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-gradient-to-r from-green-600 to-green-800 px-6 py-4">
+                    <h2 class="text-xl font-bold text-white">Informasi Pencairan</h2>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="flex border-b border-gray-100 pb-4">
+                        <div class="w-1/3">
+                            <p class="text-sm font-semibold text-gray-600">Jumlah Dicairkan</p>
+                        </div>
+                        <div class="w-2/3">
+                            <p class="text-xl font-bold text-green-600">
+                                Rp {{ number_format($programKerja->pencairan->jumlah_dicairkan, 0, ',', '.') }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex border-b border-gray-100 pb-4">
+                        <div class="w-1/3">
+                            <p class="text-sm font-semibold text-gray-600">Tanggal Pencairan</p>
+                        </div>
+                        <div class="w-2/3">
+                            <p class="text-base text-gray-900">
+                                {{ $programKerja->pencairan->tanggal_pencairan->format('d M Y, H:i') }} WIB
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex border-b border-gray-100 pb-4">
+                        <div class="w-1/3">
+                            <p class="text-sm font-semibold text-gray-600">Metode Pencairan</p>
+                        </div>
+                        <div class="w-2/3">
+                            <p class="text-base text-gray-900">{{ $programKerja->pencairan->metode_pencairan_label }}</p>
+                        </div>
+                    </div>
+
+                    @if($programKerja->pencairan->nomor_referensi)
+                    <div class="flex border-b border-gray-100 pb-4">
+                        <div class="w-1/3">
+                            <p class="text-sm font-semibold text-gray-600">Nomor Referensi</p>
+                        </div>
+                        <div class="w-2/3">
+                            <p class="text-base text-gray-900">{{ $programKerja->pencairan->nomor_referensi }}</p>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($programKerja->pencairan->dicairkanOleh)
+                    <div class="flex border-b border-gray-100 pb-4">
+                        <div class="w-1/3">
+                            <p class="text-sm font-semibold text-gray-600">Dicairkan Oleh</p>
+                        </div>
+                        <div class="w-2/3">
+                            <p class="text-base text-gray-900">{{ $programKerja->pencairan->dicairkanOleh->name }}</p>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($programKerja->pencairan->catatan)
+                    <div class="flex">
+                        <div class="w-1/3">
+                            <p class="text-sm font-semibold text-gray-600">Catatan</p>
+                        </div>
+                        <div class="w-2/3">
+                            <p class="text-base text-gray-700">{{ $programKerja->pencairan->catatan }}</p>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
 
             <!-- Card: Timeline Approval (jika sudah diajukan) -->
             @if($programKerja->submitted_at)
@@ -219,6 +306,46 @@
                             </div>
                         </div>
                         @endif
+
+                        <!-- Pencairan (hanya muncul jika sudah disetujui ketua) -->
+                        @if(in_array($programKerja->status, ['menunggu_pencairan', 'dicairkan']))
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                @if($programKerja->pencairan)
+                                    <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                @else
+                                    <div class="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <p class="text-sm font-semibold text-gray-900">Pencairan Dana</p>
+                                @if($programKerja->pencairan)
+                                    <p class="text-xs text-gray-600 mt-1">
+                                        {{ $programKerja->pencairan->tanggal_pencairan->format('d M Y, H:i') }} WIB
+                                    </p>
+                                    @if($programKerja->pencairan->dicairkanOleh)
+                                        <p class="text-xs text-gray-500 mt-0.5">oleh {{ $programKerja->pencairan->dicairkanOleh->name }}</p>
+                                    @endif
+                                    <div class="mt-2 bg-green-50 rounded-lg p-3">
+                                        <p class="text-xs text-green-700">
+                                            <strong>Dicairkan:</strong> Rp {{ number_format($programKerja->pencairan->jumlah_dicairkan, 0, ',', '.') }}
+                                            via {{ $programKerja->pencairan->metode_pencairan_label }}
+                                        </p>
+                                    </div>
+                                @else
+                                    <p class="text-xs text-gray-500 mt-1">Menunggu pencairan dana dari bendahara</p>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -302,6 +429,12 @@
                 document.getElementById('editNama').value = pk.nama;
                 document.getElementById('editAnggaran').value = pk.anggaran;
                 document.getElementById('editTahun').value = pk.tahun;
+                
+                // Set bidang_id kalau superadmin
+                const editBidangId = document.getElementById('editBidangId');
+                if (editBidangId) {
+                    editBidangId.value = pk.bidang_id;
+                }
                 
                 const modal = document.getElementById('editModal');
                 document.body.style.overflow = 'hidden';

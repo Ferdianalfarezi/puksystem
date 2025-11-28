@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Approval Ketua')
+@section('title', 'Pencairan Dana')
 
 @section('content')
 <div class="space-y-6">
@@ -9,23 +9,23 @@
     <div class="space-y-4">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Approval Program Kerja</h1>
-                <p class="text-gray-600 mt-1">Approval final program kerja dari semua bidang</p>
+                <h1 class="text-3xl font-bold text-gray-900">Pencairan Dana Program Kerja</h1>
+                <p class="text-gray-600 mt-1">Kelola pencairan dana untuk program kerja yang telah disetujui</p>
             </div>
         </div>
 
         <!-- Statistics Badges -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Total Menunggu -->
+            <!-- Total Menunggu Pencairan -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Menunggu Approval</p>
+                        <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Menunggu Pencairan</p>
                         <p class="text-2xl font-bold text-blue-900 mt-1">{{ $programKerjas->total() }}</p>
                     </div>
                     <div class="bg-blue-100 p-3 rounded-lg">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggaran</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tahun</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bendahara</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Disetujui</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -116,12 +116,12 @@
                                 <div class="text-sm font-medium text-gray-900">{{ $pk->nama }}</div>
                                 @if($pk->submittedBy)
                                     <div class="text-xs text-gray-500 mt-1">
-                                        Pengaju: {{ $pk->submittedBy->name }}
+                                        oleh {{ $pk->submittedBy->name }}
                                     </div>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-gray-900">
+                                <div class="text-sm font-semibold text-green-600">
                                     Rp {{ number_format($pk->anggaran, 0, ',', '.') }}
                                 </div>
                             </td>
@@ -131,13 +131,13 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $pk->tahun }}
                             </td>
-                            <td class="px-6 py-4">
-                                @if($pk->reviewedByBendahara)
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($pk->reviewed_at_ketua)
                                     <div class="text-xs text-gray-600">
-                                        {{ $pk->reviewedByBendahara->name }}
+                                        {{ $pk->reviewed_at_ketua->format('d M Y') }}
                                     </div>
                                     <div class="text-xs text-gray-500">
-                                        {{ $pk->reviewed_at_bendahara->format('d M Y') }}
+                                        {{ $pk->reviewed_at_ketua->format('H:i') }} WIB
                                     </div>
                                 @else
                                     <span class="text-xs text-gray-400">-</span>
@@ -145,27 +145,13 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <a href="{{ route('ketua.show', $pk->id) }}"
-                                    class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
-                                    title="Detail">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                        </svg>
+                                    <a href="{{ route('pencairan.show', $pk->id) }}"
+                                       class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-600 transition">
+                                        Detail
                                     </a>
-                                    <button onclick="openApproveModal({{ $pk->id }}, '{{ $pk->nama }}')"
-                                            class="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition"
-                                            title="Setuju">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                    </button>
-                                    <button onclick="openRejectModal({{ $pk->id }}, '{{ $pk->nama }}')"
-                                            class="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition"
-                                            title="Tolak">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
+                                    <button onclick="openCairkanModal({{ $pk->id }}, '{{ $pk->nama }}', {{ $pk->anggaran }})"
+                                            class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-600 transition">
+                                        Cairkan
                                     </button>
                                 </div>
                             </td>
@@ -176,8 +162,8 @@
                                 <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                                <p class="mt-4 text-gray-600 font-semibold">Tidak ada program kerja yang menunggu approval</p>
-                                <p class="text-gray-500 text-sm">Semua program kerja sudah di-approve</p>
+                                <p class="mt-4 text-gray-600 font-semibold">Tidak ada program kerja yang menunggu pencairan</p>
+                                <p class="text-gray-500 text-sm">Semua program kerja sudah dicairkan</p>
                             </td>
                         </tr>
                     @endforelse
@@ -193,11 +179,8 @@
     </div>
 </div>
 
-<!-- Approve Modal -->
-@include('ketua.approve-modal')
-
-<!-- Reject Modal -->
-@include('ketua.reject-modal')
+<!-- Cairkan Modal -->
+@include('pencairan.cairkan-modal')
 
 @endsection
 
@@ -226,15 +209,25 @@
 
     let currentProgramId = null;
     let currentProgramName = '';
+    let currentProgramAnggaran = 0;
 
-    function openApproveModal(id, name) {
+    function openCairkanModal(id, name, anggaran) {
         currentProgramId = id;
         currentProgramName = name;
+        currentProgramAnggaran = anggaran;
         
-        document.getElementById('approveProgramName').textContent = name;
-        document.getElementById('approveCatatan').value = '';
+        document.getElementById('cairkanProgramName').textContent = name;
+        document.getElementById('cairkanProgramAnggaran').textContent = 'Rp ' + formatRupiah(anggaran);
+        document.getElementById('jumlahDicairkan').value = anggaran;
+        document.getElementById('jumlahDicairkan').max = anggaran;
+        document.getElementById('metodePencairan').value = 'transfer';
+        document.getElementById('nomorReferensi').value = '';
+        document.getElementById('catatanPencairan').value = '';
         
-        const modal = document.getElementById('approveModal');
+        // Clear errors
+        clearErrors();
+        
+        const modal = document.getElementById('cairkanModal');
         document.body.style.overflow = 'hidden';
         modal.classList.remove('hidden');
         modal.classList.add('flex');
@@ -244,8 +237,8 @@
         });
     }
 
-    function closeApproveModal() {
-        const modal = document.getElementById('approveModal');
+    function closeCairkanModal() {
+        const modal = document.getElementById('cairkanModal');
         modal.classList.remove('active');
         setTimeout(() => {
             modal.classList.add('hidden');
@@ -253,83 +246,40 @@
             document.body.style.overflow = '';
             currentProgramId = null;
             currentProgramName = '';
+            currentProgramAnggaran = 0;
         }, 250);
     }
 
-    function openRejectModal(id, name) {
-        currentProgramId = id;
-        currentProgramName = name;
-        
-        document.getElementById('rejectProgramName').textContent = name;
-        document.getElementById('rejectCatatan').value = '';
-        document.getElementById('error-reject-catatan').textContent = '';
-        
-        const modal = document.getElementById('rejectModal');
-        document.body.style.overflow = 'hidden';
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        void modal.offsetWidth;
-        requestAnimationFrame(() => {
-            modal.classList.add('active');
-        });
+    function clearErrors() {
+        document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
     }
 
-    function closeRejectModal() {
-        const modal = document.getElementById('rejectModal');
-        modal.classList.remove('active');
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.style.overflow = '';
-            currentProgramId = null;
-            currentProgramName = '';
-        }, 250);
+    function formatRupiah(angka) {
+        return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
 
-    document.getElementById('approveForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const formData = new FormData(this);
-
-        try {
-            const response = await fetch(`/ketua/${currentProgramId}/approve`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                },
-                body: formData
+    // Update display jumlah saat input berubah
+    document.addEventListener('DOMContentLoaded', function() {
+        const jumlahInput = document.getElementById('jumlahDicairkan');
+        if (jumlahInput) {
+            jumlahInput.addEventListener('input', function() {
+                const jumlah = parseFloat(this.value) || 0;
+                const display = document.getElementById('jumlahDisplay');
+                if (display) {
+                    display.textContent = 'Rp ' + formatRupiah(jumlah);
+                }
             });
-
-            const data = await response.json();
-
-            if (data.success) {
-                closeApproveModal();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: data.message,
-                    showConfirmButton: false,
-                    timer: 2000
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire('Error!', data.message, 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            Swal.fire('Error!', 'Terjadi kesalahan!', 'error');
         }
     });
 
-    document.getElementById('rejectForm').addEventListener('submit', async function(e) {
+    document.getElementById('cairkanForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        document.getElementById('error-reject-catatan').textContent = '';
+        clearErrors();
 
         const formData = new FormData(this);
 
         try {
-            const response = await fetch(`/ketua/${currentProgramId}/reject`, {
+            const response = await fetch(`/pencairan/${currentProgramId}/cairkan`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -340,7 +290,7 @@
             const data = await response.json();
 
             if (data.success) {
-                closeRejectModal();
+                closeCairkanModal();
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil!',
@@ -351,8 +301,13 @@
                     location.reload();
                 });
             } else {
-                if (data.errors && data.errors.catatan) {
-                    document.getElementById('error-reject-catatan').textContent = data.errors.catatan[0];
+                if (data.errors) {
+                    Object.keys(data.errors).forEach(key => {
+                        const errorElement = document.getElementById(`error-${key}`);
+                        if (errorElement) {
+                            errorElement.textContent = data.errors[key][0];
+                        }
+                    });
                 } else {
                     Swal.fire('Error!', data.message, 'error');
                 }
@@ -365,8 +320,7 @@
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeApproveModal();
-            closeRejectModal();
+            closeCairkanModal();
         }
     });
 </script>

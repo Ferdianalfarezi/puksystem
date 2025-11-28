@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ProgramKerja extends Model
 {
@@ -15,6 +17,7 @@ class ProgramKerja extends Model
         'nama',
         'anggaran',
         'tahun',
+        'tanggal',
         'status',
         'submitted_at',
         'submitted_by',
@@ -31,6 +34,7 @@ class ProgramKerja extends Model
         'submitted_at' => 'datetime',
         'reviewed_at_bendahara' => 'datetime',
         'reviewed_at_ketua' => 'datetime',
+        'tanggal' => 'date',
     ];
 
     // Relationships
@@ -52,6 +56,16 @@ class ProgramKerja extends Model
     public function reviewedByKetua(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by_ketua');
+    }
+
+    public function pencairan(): HasOne
+    {
+        return $this->hasOne(Pencairan::class);
+    }
+
+    public function histories(): HasMany
+    {
+        return $this->hasMany(ProgramKerjaHistory::class);
     }
 
     // Scopes
@@ -86,9 +100,24 @@ class ProgramKerja extends Model
         return $this->status === 'menunggu_approval_ketua';
     }
 
+    public function isMenungguPencairan(): bool
+    {
+        return $this->status === 'menunggu_pencairan';
+    }
+
+    public function isDicairkan(): bool
+    {
+        return $this->status === 'dicairkan';
+    }
+
+    public function canBeCairkan(): bool
+    {
+        return $this->status === 'menunggu_pencairan';
+    }
+
     public function isApproved(): bool
     {
-        return $this->status === 'disetujui';
+        return $this->status === 'menunggu_pencairan';
     }
 
     public function isRejected(): bool
@@ -96,16 +125,30 @@ class ProgramKerja extends Model
         return in_array($this->status, ['ditolak_bendahara', 'ditolak_ketua']);
     }
 
-    // Status badge color helper untuk view
     public function getStatusBadgeClass(): string
     {
         return match($this->status) {
-            'draft' => 'badge-secondary',
-            'menunggu_konfirmasi_bendahara' => 'badge-warning',
-            'menunggu_approval_ketua' => 'badge-info',
-            'ditolak_bendahara', 'ditolak_ketua' => 'badge-danger',
-            'disetujui' => 'badge-success',
-            default => 'badge-secondary',
+            'draft' => 'bg-gray-100 text-gray-800',
+            'menunggu_konfirmasi_bendahara' => 'bg-yellow-100 text-yellow-800',
+            'menunggu_approval_ketua' => 'bg-blue-100 text-blue-800',
+            'menunggu_pencairan' => 'bg-purple-100 text-purple-800',
+            'dicairkan' => 'bg-green-100 text-green-800',
+            'ditolak_bendahara', 'ditolak_ketua' => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match($this->status) {
+            'draft' => 'Draft',
+            'menunggu_konfirmasi_bendahara' => 'Menunggu Bendahara',
+            'menunggu_approval_ketua' => 'Menunggu Ketua',
+            'menunggu_pencairan' => 'Menunggu Pencairan',
+            'dicairkan' => 'Dicairkan',
+            'ditolak_bendahara' => 'Ditolak Bendahara',
+            'ditolak_ketua' => 'Ditolak Ketua',
+            default => ucfirst(str_replace('_', ' ', $this->status)),
         };
     }
 }

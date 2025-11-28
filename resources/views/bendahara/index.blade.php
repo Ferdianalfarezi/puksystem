@@ -97,6 +97,7 @@
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Program</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggaran</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tahun</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Diajukan</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
@@ -125,6 +126,9 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $pk->tanggal ? $pk->tanggal->format('d M Y') : '-' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $pk->tahun }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -136,21 +140,31 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <a href="{{ route('bendahara.show', $pk->id) }}"
-                                       class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-600 transition">
-                                        Detail
-                                    </a>
-                                    <button onclick="openApproveModal({{ $pk->id }}, '{{ $pk->nama }}')"
-                                            class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-600 transition">
-                                        Setuju
-                                    </button>
-                                    <button onclick="openRejectModal({{ $pk->id }}, '{{ $pk->nama }}')"
-                                            class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-600 transition">
-                                        Tolak
-                                    </button>
-                                </div>
-                            </td>
+                            <div class="flex items-center justify-center space-x-2">
+                                <button onclick="openDetailModalBendahara({{ $pk->id }})"
+                                        class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
+                                        title="Detail">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                </button>
+                                <button onclick="openApproveModal({{ $pk->id }}, '{{ $pk->nama }}')"
+                                        class="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition"
+                                        title="Setuju">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </button>
+                                <button onclick="openRejectModal({{ $pk->id }}, '{{ $pk->nama }}')"
+                                        class="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition"
+                                        title="Tolak">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
                         </tr>
                     @empty
                         <tr>
@@ -180,6 +194,9 @@
 
 <!-- Reject Modal -->
 @include('bendahara.reject-modal')
+
+<!-- Include Detail Modal -->
+@include('bendahara.detail')
 
 @endsection
 

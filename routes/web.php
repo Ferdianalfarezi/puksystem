@@ -7,6 +7,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProgramKerjaController;
 use App\Http\Controllers\BendaharaController;
 use App\Http\Controllers\KetuaController;
+use App\Http\Controllers\PencairanController;
+use App\Http\Controllers\HistoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -31,12 +33,12 @@ Route::middleware('auth')->group(function () {
     // User Management Routes
     Route::resource('users', UserController::class);
 
-    // Route untuk Admin Bidang
+    // Route untuk Admin Bidang - Program Kerja
     Route::resource('program-kerja', ProgramKerjaController::class);
     Route::post('program-kerja/{programKerja}/submit', [ProgramKerjaController::class, 'submit'])
         ->name('program-kerja.submit');
 
-    // Route untuk Bendahara
+    // Route untuk Bendahara - Konfirmasi
     Route::prefix('bendahara')->name('bendahara.')->group(function () {
         Route::get('/', [BendaharaController::class, 'index'])->name('index');
         Route::get('/{programKerja}', [BendaharaController::class, 'show'])->name('show');
@@ -44,12 +46,25 @@ Route::middleware('auth')->group(function () {
         Route::post('/{programKerja}/reject', [BendaharaController::class, 'reject'])->name('reject');
     });
     
-    // Route untuk Ketua
+    // Route untuk Ketua - Approval
     Route::prefix('ketua')->name('ketua.')->group(function () {
         Route::get('/', [KetuaController::class, 'index'])->name('index');
         Route::get('/{programKerja}', [KetuaController::class, 'show'])->name('show');
         Route::post('/{programKerja}/approve', [KetuaController::class, 'approve'])->name('approve');
         Route::post('/{programKerja}/reject', [KetuaController::class, 'reject'])->name('reject');
+    });
+
+    // Route untuk Pencairan (Bendahara)
+    Route::prefix('pencairan')->name('pencairan.')->group(function () {
+        Route::get('/', [PencairanController::class, 'index'])->name('index');
+        Route::get('/{programKerja}', [PencairanController::class, 'show'])->name('show');
+        Route::post('/{programKerja}/cairkan', [PencairanController::class, 'cairkan'])->name('cairkan');
+    });
+
+    // Route untuk History
+    Route::prefix('history')->name('history.')->group(function () {
+        Route::get('/program-kerja', [HistoryController::class, 'index'])->name('program-kerja');
+        Route::get('/program-kerja/{programKerja}', [HistoryController::class, 'show'])->name('program-kerja.show');
     });
     
 });

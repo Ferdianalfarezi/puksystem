@@ -57,13 +57,37 @@
             </div>
 
             <!-- Tahun -->
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Tahun <span class="text-red-500">*</span></label>
-                <input type="number" id="editTahun" name="tahun" required min="2000" max="2100"
-                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
-                    placeholder="{{ date('Y') }}">
-                <span class="text-red-500 text-sm error-message" id="error-edit-tahun"></span>
-            </div>
+<div>
+    <label for="editTahun" class="block text-sm font-semibold text-gray-700 mb-2">
+        Tahun <span class="text-red-500">*</span>
+    </label>
+    <input 
+        type="number" 
+        id="editTahun" 
+        name="tahun"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
+        placeholder="Contoh: 2024"
+        min="2000"
+        max="2100"
+        required
+    >
+    <span class="text-red-500 text-xs error-message" id="error-edit-tahun"></span>
+</div>
+
+<!-- Tanggal -->
+<div>
+    <label for="editTanggal" class="block text-sm font-semibold text-gray-700 mb-2">
+        Tanggal Pelaksanaan <span class="text-red-500">*</span>
+    </label>
+    <input 
+        type="date" 
+        id="editTanggal" 
+        name="tanggal"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
+        required
+    >
+    <span class="text-red-500 text-xs error-message" id="error-edit-tanggal"></span>
+</div>
 
             <!-- Warning Box -->
             <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
