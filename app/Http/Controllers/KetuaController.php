@@ -24,6 +24,31 @@ class KetuaController extends Controller
     {
         $programKerja->load(['bidang', 'submittedBy', 'reviewedByBendahara', 'reviewedByKetua']);
 
+        // Check if AJAX request
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $programKerja->id,
+                    'nama' => $programKerja->nama,
+                    'bidang' => [
+                        'id' => $programKerja->bidang->id,
+                        'nama' => $programKerja->bidang->nama,
+                    ],
+                    'anggaran' => $programKerja->anggaran,
+                    'tahun' => $programKerja->tahun,
+                    'tanggal' => $programKerja->tanggal,
+                    'jenis_pengeluaran' => $programKerja->jenis_pengeluaran,
+                    'submitted_by_name' => $programKerja->submittedBy ? $programKerja->submittedBy->name : null,
+                    'submitted_at' => $programKerja->submitted_at,
+                    'reviewed_by_bendahara_name' => $programKerja->reviewedByBendahara ? $programKerja->reviewedByBendahara->name : null,
+                    'reviewed_at_bendahara' => $programKerja->reviewed_at_bendahara,
+                    'catatan_bendahara' => $programKerja->catatan_bendahara,
+                ]
+            ]);
+        }
+
+        // Return view untuk non-AJAX request
         return view('ketua.detail', compact('programKerja'));
     }
 

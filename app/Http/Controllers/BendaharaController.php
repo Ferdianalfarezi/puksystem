@@ -34,6 +34,7 @@ class BendaharaController extends Controller
                     'bidang' => [
                         'nama' => $programKerja->bidang->nama
                     ],
+                    'jenis_pengeluaran' => $programKerja->jenis_pengeluaran,
                     'anggaran' => $programKerja->anggaran,
                     'tahun' => $programKerja->tahun,
                     'tanggal' => $programKerja->tanggal ? $programKerja->tanggal->format('Y-m-d') : null,

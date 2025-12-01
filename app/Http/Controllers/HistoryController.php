@@ -51,26 +51,118 @@ class HistoryController extends Controller
         return view('history.program-kerja', compact('programKerjas', 'bidangs', 'tahuns'));
     }
 
-    public function show(ProgramKerja $programKerja)
+    public function show($id)
     {
         $user = Auth::user();
         $userRole = $user->role->nama ?? '';
         
-        if ($userRole === 'admin') {
-            if ($programKerja->bidang_id !== $user->bidang_id) {
-                abort(403, 'Unauthorized access.');
-            }
-        }
-        
-        $programKerja->load([
+        $programKerja = ProgramKerja::with([
             'bidang', 
             'submittedBy', 
             'reviewedByBendahara', 
             'reviewedByKetua',
             'pencairan.dicairkanOleh',
             'histories.dilakukanOleh'
-        ]);
+        ])->findOrFail($id);
 
+        // Check access permission
+        if ($userRole === 'admin') {
+            if ($programKerja->bidang_id !== $user->bidang_id) {
+                if (request()->wantsJson() || request()->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Unauthorized access.'
+                    ], 403);
+                }
+                abort(403, 'Unauthorized access.');
+            }
+        }
+
+        // Check if AJAX request
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $programKerja->id,
+                    'nama' => $programKerja->nama,
+                    'bidang' => [
+                        'id' => $programKerja->bidang->id,
+                        'nama' => $programKerja->bidang->nama,
+                    ],
+                    'anggaran' => $programKerja->anggaran,
+                    'tahun' => $programKerja->tahun,
+                    'tanggal' => $programKerja->tanggal,
+                    'tanggal_formatted' => $programKerja->tanggal ? $programKerja->tanggal->format('d M Y') : null,
+                    'jenis_pengeluaran' => $programKerja->jenis_pengeluaran,
+                    'status' => $programKerja->status,
+                    'created_at_formatted' => $programKerja->created_at->format('d M Y, H:i'),
+                    'updated_at_formatted' => $programKerja->updated_at->format('d M Y, H:i'),
+                    'submitted_at_formatted' => $programKerja->submitted_at ? $programKerja->submitted_at->format('d M Y, H:i') . ' WIB' : null,
+                    'submitted_by_name' => $programKerja->submittedBy ? $programKerja->submittedBy->name : null,
+                    'histories_count' => $programKerja->histories->count(),
+                    
+                    // Timeline histories
+                    'histories' => $programKerja->histories->sortByDesc('dilakukan_pada')->values()->map(function($history) {
+                        return [
+                            'status_dari' => $history->status_dari,
+                            'status_ke' => $history->status_ke,
+                            'status_ke_label' => $this->getStatusLabel($history->status_ke),
+                            'catatan' => $history->catatan,
+                            'dilakukan_pada' => $history->dilakukan_pada,
+                            'dilakukan_pada_formatted' => $history->dilakukan_pada->format('d M Y, H:i') . ' WIB',
+                            'dilakukan_oleh_name' => $history->dilakukanOleh ? $history->dilakukanOleh->name : null,
+                        ];
+                    }),
+                    
+                    // Pencairan info
+                    'pencairan' => $programKerja->pencairan ? [
+                        'jumlah_dicairkan' => $programKerja->pencairan->jumlah_dicairkan,
+                        'tanggal_pencairan' => $programKerja->pencairan->tanggal_pencairan,
+                        'tanggal_pencairan_formatted' => $programKerja->pencairan->tanggal_pencairan->format('d M Y, H:i') . ' WIB',
+                        'metode_pencairan' => $programKerja->pencairan->metode_pencairan,
+                        'metode_pencairan_label' => $this->getMetodePencairanLabel($programKerja->pencairan->metode_pencairan),
+                        'nomor_referensi' => $programKerja->pencairan->nomor_referensi,
+                        'catatan' => $programKerja->pencairan->catatan,
+                        'dicairkan_oleh_name' => $programKerja->pencairan->dicairkanOleh ? $programKerja->pencairan->dicairkanOleh->name : null,
+                    ] : null,
+                ]
+            ]);
+        }
+
+        // Return view untuk non-AJAX request (backward compatibility)
         return view('history.detail', compact('programKerja'));
+    }
+
+    /**
+     * Get status label in Indonesian
+     */
+    private function getStatusLabel($status)
+    {
+        $labels = [
+            'draft' => 'Draft',
+            'menunggu_konfirmasi_bendahara' => 'Menunggu Konfirmasi Bendahara',
+            'menunggu_approval_ketua' => 'Menunggu Approval Ketua',
+            'menunggu_pencairan' => 'Menunggu Pencairan',
+            'dicairkan' => 'Dicairkan',
+            'ditolak_bendahara' => 'Ditolak Bendahara',
+            'ditolak_ketua' => 'Ditolak Ketua',
+        ];
+
+        return $labels[$status] ?? $status;
+    }
+
+    /**
+     * Get metode pencairan label in Indonesian
+     */
+    private function getMetodePencairanLabel($metode)
+    {
+        $labels = [
+            'transfer_bank' => 'Transfer Bank',
+            'tunai' => 'Tunai',
+            'cek' => 'Cek',
+            'giro' => 'Giro',
+        ];
+
+        return $labels[$metode] ?? $metode;
     }
 }

@@ -11,6 +11,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use App\Imports\UsersImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
+use App\Exports\UsersTemplateExport;
 
 class UserController extends Controller
 {
@@ -178,6 +182,54 @@ class UserController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menghapus user.'
+            ], 500);
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new UsersTemplateExport, 'template_import_users.xlsx');
+    }
+
+    // Method untuk import Excel
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048'
+        ]);
+
+        try {
+            $file = $request->file('file');
+            
+            // Import with validation
+            $import = new UsersImport();
+            Excel::import($import, $file);
+
+            // Check if there are any failures
+            $failures = $import->getFailures();
+            
+            if (count($failures) > 0) {
+                $errors = [];
+                foreach ($failures as $failure) {
+                    $errors[] = "Row {$failure->row()}: " . implode(', ', $failure->errors());
+                }
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Import gagal',
+                    'errors' => $errors
+                ], 422);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data users berhasil diimport!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Import gagal: ' . $e->getMessage()
             ], 500);
         }
     }

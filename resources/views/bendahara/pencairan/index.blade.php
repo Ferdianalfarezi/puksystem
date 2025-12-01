@@ -96,9 +96,9 @@
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Program</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis Pengeluaran</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggaran</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tahun</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Disetujui</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -120,6 +120,29 @@
                                     </div>
                                 @endif
                             </td>
+                            <!-- ✅ TAMBAHKAN: Jenis Pengeluaran -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($pk->jenis_pengeluaran)
+                                    @php
+                                        $jenisBadgeClass = match($pk->jenis_pengeluaran) {
+                                            'Kesekretariatan' => 'bg-blue-100 text-blue-800',
+                                            'Perjalanan Dinas' => 'bg-purple-100 text-purple-800',
+                                            'Aksi' => 'bg-green-100 text-green-800',
+                                            'Dana Sosial', 'Dansos Duka', 'Dansos Banjir', 'Dansos Ekternal' => 'bg-pink-100 text-pink-800',
+                                            'Pendidikan' => 'bg-yellow-100 text-yellow-800',
+                                            'Rapat', 'Rapat GM' => 'bg-gray-100 text-gray-800',
+                                            'COS DPP' => 'bg-indigo-100 text-indigo-800',
+                                            'Iuaran FKJ', 'Iuran GM' => 'bg-orange-100 text-orange-800',
+                                            default => 'bg-gray-100 text-gray-800',
+                                        };
+                                    @endphp
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $jenisBadgeClass }}">
+                                        {{ $pk->jenis_pengeluaran }}
+                                    </span>
+                                @else
+                                    <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-semibold text-green-600">
                                     Rp {{ number_format($pk->anggaran, 0, ',', '.') }}
@@ -127,9 +150,6 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $pk->tanggal ? $pk->tanggal->format('d M Y') : '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $pk->tahun }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($pk->reviewed_at_ketua)
@@ -145,10 +165,6 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <a href="{{ route('pencairan.show', $pk->id) }}"
-                                       class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-600 transition">
-                                        Detail
-                                    </a>
                                     <button onclick="openCairkanModal({{ $pk->id }}, '{{ $pk->nama }}', {{ $pk->anggaran }})"
                                             class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-600 transition">
                                         Cairkan

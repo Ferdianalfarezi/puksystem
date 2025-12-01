@@ -88,58 +88,98 @@
     </div>
 
     <!-- Table Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full" id="programKerjaTable">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Program</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggaran</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tahun</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Diajukan</th>
-                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200" id="programKerjaTableBody">
-                    @forelse($programKerjas as $index => $pk)
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $programKerjas->firstItem() + $index }}</td>
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white">
-                                    {{ $pk->bidang->nama }}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full" id="programKerjaTable">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Program</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis Pengeluaran</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggaran</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tahun</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Diajukan</th>
+                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="programKerjaTableBody">
+                @forelse($programKerjas as $index => $pk)
+                    <tr class="hover:bg-gray-50 transition">
+                        <!-- No -->
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ $programKerjas->firstItem() + $index }}</td>
+                        
+                        <!-- Bidang -->
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium text-dark">
+                                {{ $pk->bidang->nama }}
+                            </span>
+                        </td>
+                        
+                        <!-- Nama Program -->
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">{{ $pk->nama }}</div>
+                            @if($pk->submittedBy)
+                                <div class="text-xs text-gray-500 mt-1">
+                                    oleh {{ $pk->submittedBy->name }}
+                                </div>
+                            @endif
+                        </td>
+                        
+                        <!-- ✅ TAMBAHKAN: Jenis Pengeluaran -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($pk->jenis_pengeluaran)
+                                @php
+                                    $jenisBadgeClass = match($pk->jenis_pengeluaran) {
+                                        'Kesekretariatan' => 'bg-blue-100 text-blue-800',
+                                        'Perjalanan Dinas' => 'bg-purple-100 text-purple-800',
+                                        'Aksi' => 'bg-green-100 text-green-800',
+                                        'Dana Sosial', 'Dansos Duka', 'Dansos Banjir', 'Dansos Ekternal' => 'bg-pink-100 text-pink-800',
+                                        'Pendidikan' => 'bg-yellow-100 text-yellow-800',
+                                        'Rapat', 'Rapat GM' => 'bg-gray-100 text-gray-800',
+                                        'COS DPP' => 'bg-indigo-100 text-indigo-800',
+                                        'Iuaran FKJ', 'Iuran GM' => 'bg-orange-100 text-orange-800',
+                                        default => 'bg-gray-100 text-gray-800',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $jenisBadgeClass }}">
+                                    {{ $pk->jenis_pengeluaran }}
                                 </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900">{{ $pk->nama }}</div>
-                                @if($pk->submittedBy)
-                                    <div class="text-xs text-gray-500 mt-1">
-                                        oleh {{ $pk->submittedBy->name }}
-                                    </div>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-gray-900">
-                                    Rp {{ number_format($pk->anggaran, 0, ',', '.') }}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $pk->tanggal ? $pk->tanggal->format('d M Y') : '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $pk->tahun }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-xs text-gray-600">
-                                    {{ $pk->submitted_at->format('d M Y') }}
-                                </div>
-                                <div class="text-xs text-gray-500">
-                                    {{ $pk->submitted_at->format('H:i') }} WIB
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
+                            @else
+                                <span class="text-xs text-gray-400">-</span>
+                            @endif
+                        </td>
+                        
+                        <!-- Anggaran -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-semibold text-gray-900">
+                                Rp {{ number_format($pk->anggaran, 0, ',', '.') }}
+                            </div>
+                        </td>
+                        
+                        <!-- Tanggal -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $pk->tanggal ? $pk->tanggal->format('d M Y') : '-' }}
+                        </td>
+                        
+                        <!-- Tahun -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $pk->tahun }}
+                        </td>
+                        
+                        <!-- Diajukan -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-xs text-gray-600">
+                                {{ $pk->submitted_at->format('d M Y') }}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ $pk->submitted_at->format('H:i') }} WIB
+                            </div>
+                        </td>
+                        
+                        <!-- Aksi -->
+                        <td class="px-6 py-4">
                             <div class="flex items-center justify-center space-x-2">
                                 <button onclick="openDetailModalBendahara({{ $pk->id }})"
                                         class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
@@ -165,28 +205,29 @@
                                 </button>
                             </div>
                         </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-16 text-center">
-                                <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <p class="mt-4 text-gray-600 font-semibold">Tidak ada program kerja yang menunggu konfirmasi</p>
-                                <p class="text-gray-500 text-sm">Semua program kerja sudah dikonfirmasi</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        @if($programKerjas->hasPages())
-            <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
-                {{ $programKerjas->links() }}
-            </div>
-        @endif
+                    </tr>
+                @empty
+                    <tr>
+                        <!-- ✅ UPDATE: colspan dari 7 jadi 9 (karena tambah 1 kolom) -->
+                        <td colspan="9" class="px-6 py-16 text-center">
+                            <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <p class="mt-4 text-gray-600 font-semibold">Tidak ada program kerja yang menunggu konfirmasi</p>
+                            <p class="text-gray-500 text-sm">Semua program kerja sudah dikonfirmasi</p>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
+
+    @if($programKerjas->hasPages())
+        <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
+            {{ $programKerjas->links() }}
+        </div>
+    @endif
+</div>
 </div>
 
 <!-- Approve Modal -->

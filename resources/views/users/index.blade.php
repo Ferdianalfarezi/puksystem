@@ -14,6 +14,17 @@
                 <p class="text-gray-600 mt-1">Manage system users and their access</p>
             </div>
             <div class="flex space-x-3">
+                <!-- Button Import Excel -->
+                <button 
+                    onclick="openImportModal()"
+                    class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition transform hover:scale-105 flex items-center space-x-2"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <span>Import Excel</span>
+                </button>
+                
                 <!-- Button Add User -->
                 <button 
                     onclick="openCreateModal()"
@@ -223,6 +234,109 @@
 <!-- Include Edit Modal -->
 @include('users.edit')
 
+<!-- Import Modal -->
+<div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm transition-opacity duration-250">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-250 scale-95 opacity-0 modal-content">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-gray-900">Import Users from Excel</h3>
+            <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <form id="importForm" enctype="multipart/form-data">
+            @csrf
+            <div class="p-6 space-y-4">
+                <!-- Download Template Info -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-blue-900">Download template terlebih dahulu</p>
+                            <p class="text-xs text-blue-700 mt-1">Gunakan template Excel untuk format yang benar</p>
+                            <a href="{{ route('users.template') }}" class="inline-flex items-center mt-2 text-xs font-medium text-blue-600 hover:text-blue-800">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                Download Template
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Upload -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Upload File Excel <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition">
+                        <input 
+                            type="file" 
+                            name="file" 
+                            id="excelFile"
+                            accept=".xlsx,.xls,.csv"
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            onchange="handleFileSelect(event)"
+                        >
+                        <div id="fileUploadContent">
+                            <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-600 font-medium">
+                                Click to upload or drag and drop
+                            </p>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Excel files only (XLSX, XLS, CSV)
+                            </p>
+                        </div>
+                        <div id="fileNameDisplay" class="hidden">
+                            <svg class="w-12 h-12 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-900 font-medium" id="fileName"></p>
+                            <button type="button" onclick="clearFile()" class="mt-2 text-xs text-red-600 hover:text-red-800">
+                                Remove file
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-red-600 mt-1 error-message" id="error-import-file"></p>
+                </div>
+
+                <!-- Import Progress -->
+                <div id="importProgress" class="hidden">
+                    <div class="bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div id="progressBar" class="bg-green-600 h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-gray-600 text-center mt-1">Importing data...</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+                <button 
+                    type="button" 
+                    onclick="closeImportModal()"
+                    class="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition"
+                >
+                    Cancel
+                </button>
+                <button 
+                    type="submit"
+                    class="px-6 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition flex items-center space-x-2"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    <span>Import Data</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -374,6 +488,91 @@
         }, 250);
     }
 
+    // Import Modal Functions
+    function openImportModal() {
+        const modal = document.getElementById('importModal');
+        
+        document.getElementById('importForm').reset();
+        clearFile();
+        clearErrors();
+        
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        // Force reflow
+        void modal.offsetWidth;
+        
+        // Trigger animation
+        requestAnimationFrame(() => {
+            modal.classList.add('active');
+            const content = modal.querySelector('.modal-content');
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        });
+    }
+
+    function closeImportModal() {
+        const modal = document.getElementById('importModal');
+        const content = modal.querySelector('.modal-content');
+        
+        // Remove active class for fade out
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex', 'active');
+            document.getElementById('importForm').reset();
+            clearFile();
+            clearErrors();
+            hideProgress();
+            
+            // Restore body scroll
+            document.body.style.overflow = '';
+        }, 250);
+    }
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            document.getElementById('fileUploadContent').classList.add('hidden');
+            document.getElementById('fileNameDisplay').classList.remove('hidden');
+            document.getElementById('fileName').textContent = file.name;
+        }
+    }
+
+    function clearFile() {
+        document.getElementById('excelFile').value = '';
+        document.getElementById('fileUploadContent').classList.remove('hidden');
+        document.getElementById('fileNameDisplay').classList.add('hidden');
+        document.getElementById('fileName').textContent = '';
+    }
+
+    function showProgress() {
+        document.getElementById('importProgress').classList.remove('hidden');
+        let progress = 0;
+        const progressBar = document.getElementById('progressBar');
+        
+        const interval = setInterval(() => {
+            progress += 10;
+            progressBar.style.width = progress + '%';
+            
+            if (progress >= 90) {
+                clearInterval(interval);
+            }
+        }, 200);
+        
+        return interval;
+    }
+
+    function hideProgress() {
+        document.getElementById('importProgress').classList.add('hidden');
+        document.getElementById('progressBar').style.width = '0%';
+    }
+
     function clearErrors() {
         document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
     }
@@ -507,6 +706,72 @@
         }
     });
 
+    // Submit Import Form
+    document.getElementById('importForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearErrors();
+
+        const fileInput = document.getElementById('excelFile');
+        if (!fileInput.files[0]) {
+            document.getElementById('error-import-file').textContent = 'Please select a file';
+            return;
+        }
+
+        const formData = new FormData(this);
+        const progressInterval = showProgress();
+
+        try {
+            const response = await fetch('/users/import', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+                body: formData
+            });
+
+            clearInterval(progressInterval);
+            document.getElementById('progressBar').style.width = '100%';
+
+            const data = await response.json();
+
+            if (data.success) {
+                hideProgress();
+                closeImportModal();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                hideProgress();
+                if (data.errors) {
+                    let errorMessage = '';
+                    if (Array.isArray(data.errors)) {
+                        errorMessage = data.errors.join('\n');
+                    } else {
+                        errorMessage = data.message;
+                    }
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Import Failed!',
+                        html: '<pre style="text-align: left; font-size: 12px;">' + errorMessage + '</pre>',
+                        width: '600px'
+                    });
+                }
+            }
+        } catch (error) {
+            clearInterval(progressInterval);
+            hideProgress();
+            console.error('Error:', error);
+            Swal.fire('Error!', 'Something went wrong!', 'error');
+        }
+    });
+
     async function deleteUser(id) {
         const result = await Swal.fire({
             title: 'Are you sure?',
@@ -552,6 +817,7 @@
         if (e.key === 'Escape') {
             closeCreateModal();
             closeEditModal();
+            closeImportModal();
         }
     });
 </script>

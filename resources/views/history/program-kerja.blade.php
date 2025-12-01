@@ -211,7 +211,7 @@
                         <tr class="hover:bg-gray-50 transition">
                             <td class="px-6 py-4 text-sm text-gray-900">{{ $programKerjas->firstItem() + $index }}</td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium text-dark">
                                     {{ $pk->bidang->nama }}
                                 </span>
                             </td>
@@ -219,10 +219,11 @@
                                 <div class="text-sm font-medium text-gray-900">{{ $pk->nama }}</div>
                                 @if($pk->submitted_at)
                                     <div class="text-xs text-gray-500 mt-1">
-                                        Diajukan: {{ $pk->submitted_at->format('d M Y') }}
+                                       {{$pk->jenis_pengeluaran }}
                                     </div>
                                 @endif
                             </td>
+                            
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-semibold text-gray-900">
                                     Rp {{ number_format($pk->anggaran, 0, ',', '.') }}
@@ -262,13 +263,14 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <a href="{{ route('history.program-kerja.show', $pk->id) }}"
-                                    class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
-                                    title="Detail History">
+                                    <button onclick="openHistoryDetailModal({{ $pk->id }})"
+                                        class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
+                                        title="Detail History">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
-                                    </a>
+                                    </button>
                                 </div>
                             </td>
 
@@ -295,5 +297,5 @@
         @endif
     </div>
 </div>
-
+@include('history.detail')
 @endsection

@@ -112,6 +112,7 @@ class ProgramKerjaController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'anggaran' => 'required|numeric|min:0',
+            'jenis_pengeluaran' => 'required|in:' . implode(',', ProgramKerja::JENIS_PENGELUARAN), // ✅ TAMBAHKAN
             'tahun' => 'required|digits:4|integer|min:2000|max:2100',
             'tanggal' => 'required|date',
             'bidang_id' => $userRole === 'superadmin' ? 'required|exists:bidangs,id' : 'nullable',
@@ -200,6 +201,7 @@ class ProgramKerjaController extends Controller
                     'tanggal' => $programKerja->tanggal,
                     'tanggal_formatted' => $programKerja->tanggal ? $programKerja->tanggal->format('d M Y') : '-',
                     'status' => $programKerja->status,
+                    'jenis_pengeluaran' => $programKerja->jenis_pengeluaran,
                     'is_draft' => $programKerja->isDraft(),
                     
                     // Bidang
@@ -303,6 +305,7 @@ class ProgramKerjaController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'anggaran' => 'required|numeric|min:0',
+            'jenis_pengeluaran' => 'required|in:' . implode(',', ProgramKerja::JENIS_PENGELUARAN), // ✅ TAMBAHKAN
             'tahun' => 'required|digits:4|integer|min:2000|max:2100',
             'tanggal' => 'required|date',
             'bidang_id' => $userRole === 'superadmin' ? 'required|exists:bidangs,id' : 'nullable',

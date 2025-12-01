@@ -25,12 +25,7 @@ class PencairanController extends Controller
         return view('bendahara.pencairan.index', compact('programKerjas', 'kasGlobal'));
     }
 
-    public function show(ProgramKerja $programKerja)
-    {
-        $programKerja->load(['bidang', 'submittedBy', 'reviewedByBendahara', 'reviewedByKetua', 'pencairan']);
-
-        return view('bendahara.pencairan.detail', compact('programKerja'));
-    }
+    
 
     public function cairkan(Request $request, ProgramKerja $programKerja)
     {

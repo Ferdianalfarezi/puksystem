@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('bidangs', BidangController::class);
     
     // User Management Routes
+    Route::get('/users/template', [UserController::class, 'downloadTemplate'])->name('users.template');
+    Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
     Route::resource('users', UserController::class);
 
     // Route untuk Admin Bidang - Program Kerja

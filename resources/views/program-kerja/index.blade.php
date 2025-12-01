@@ -412,65 +412,65 @@
     </div>
 
     <!-- Search & Filter -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between md:space-x-4 space-y-3 md:space-y-0">
-        <!-- Filter Bidang (Hanya untuk Superadmin & Sekretaris) -->
-        @if(in_array($userRole, ['superadmin', 'sekretaris']))
-        <div class="w-full md:w-auto">
-            <select id="filterBidang" onchange="filterByBidang()" class="w-full md:w-64 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
-                <option value="all" {{ (isset($selectedBidangId) && $selectedBidangId === 'all') ? 'selected' : '' }}>
-                    📋 Semua Bidang
-                </option>
-                @foreach($bidangs as $bidang)
-                    <option value="{{ $bidang->id }}" {{ (isset($selectedBidangId) && $selectedBidangId == $bidang->id) ? 'selected' : '' }}>
-                        {{ $bidang->nama }}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between md:space-x-4 space-y-3 md:space-y-0">
+            <!-- Filter Bidang (Hanya untuk Superadmin & Sekretaris) -->
+            @if(in_array($userRole, ['superadmin', 'sekretaris']))
+            <div class="w-full md:w-auto">
+                <select id="filterBidang" onchange="filterByBidang()" class="w-full md:w-64 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
+                    <option value="all" {{ (isset($selectedBidangId) && $selectedBidangId === 'all') ? 'selected' : '' }}>
+                        📋 Semua Bidang
                     </option>
-                @endforeach
-            </select>
-        </div>
-        @endif
-
-        <!-- Search Box -->
-        <div class="w-full md:flex-1 relative">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
+                    @foreach($bidangs as $bidang)
+                        <option value="{{ $bidang->id }}" {{ (isset($selectedBidangId) && $selectedBidangId == $bidang->id) ? 'selected' : '' }}>
+                            {{ $bidang->nama }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
-            <input 
-                type="text" 
-                id="searchInput"
-                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
-                placeholder="Cari program kerja..."
-                onkeyup="searchTable()"
-            >
-        </div>
+            @endif
 
-        <!-- Filter Status -->
-        <div class="w-full md:w-auto">
-            <select id="filterStatus" onchange="filterByStatus()" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
-                <option value="">Semua Status</option>
-                <option value="draft">Draft</option>
-                <option value="menunggu_konfirmasi_bendahara">Menunggu Bendahara</option>
-                <option value="menunggu_approval_ketua">Menunggu Ketua</option>
-                <option value="menunggu_pencairan">Menunggu Pencairan</option>
-                <option value="dicairkan">Dicairkan</option>
-                <option value="ditolak_bendahara">Ditolak Bendahara</option>
-                <option value="ditolak_ketua">Ditolak Ketua</option>
-            </select>
-        </div>
+            <!-- Search Box -->
+            <div class="w-full md:flex-1 relative">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <input 
+                    type="text" 
+                    id="searchInput"
+                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
+                    placeholder="Cari program kerja..."
+                    onkeyup="searchTable()"
+                >
+            </div>
 
-        <!-- ✅ TAMBAHKAN: Show Per Page -->
-        <div class="w-full md:w-auto">
-            <select id="perPageSelect" onchange="changePerPage()" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
-                <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20 / halaman</option>
-                <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50 / halaman</option>
-                <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100 / halaman</option>
-                <option value="all" {{ $perPage === 'all' ? 'selected' : '' }}>Semua</option>
-            </select>
+            <!-- Filter Status -->
+            <div class="w-full md:w-auto">
+                <select id="filterStatus" onchange="filterByStatus()" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
+                    <option value="">Semua Status</option>
+                    <option value="draft">Draft</option>
+                    <option value="menunggu_konfirmasi_bendahara">Menunggu Bendahara</option>
+                    <option value="menunggu_approval_ketua">Menunggu Ketua</option>
+                    <option value="menunggu_pencairan">Menunggu Pencairan</option>
+                    <option value="dicairkan">Dicairkan</option>
+                    <option value="ditolak_bendahara">Ditolak Bendahara</option>
+                    <option value="ditolak_ketua">Ditolak Ketua</option>
+                </select>
+            </div>
+
+            <!-- ✅ TAMBAHKAN: Show Per Page -->
+            <div class="w-full md:w-auto">
+                <select id="perPageSelect" onchange="changePerPage()" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
+                    <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20 / halaman</option>
+                    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50 / halaman</option>
+                    <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100 / halaman</option>
+                    <option value="all" {{ $perPage === 'all' ? 'selected' : '' }}>Semua</option>
+                </select>
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Table Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -483,8 +483,9 @@
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
                         @endif
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Program</th>
+                        <!-- ✅ TAMBAHKAN: Kolom Jenis Pengeluaran -->
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis Pengeluaran</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggaran</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tahun</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
@@ -493,19 +494,21 @@
                 <tbody class="divide-y divide-gray-200" id="programKerjaTableBody">
                     @forelse($programKerjas as $index => $pk)
                         <tr class="hover:bg-gray-50 transition" data-status="{{ $pk->status }}">
-                            <!-- ✅ GANTI: Tetap pakai $programKerjas untuk nomor urut -->
+                            <!-- No -->
                             <td class="px-6 py-4 text-sm text-gray-900">
                                 {{ $programKerjas->firstItem() + $index }}
                             </td>
                             
+                            <!-- Bidang (untuk superadmin/sekretaris) -->
                             @if(in_array($userRole, ['superadmin', 'sekretaris']))
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-s font-medium text-dark">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium text-dark">
                                     {{ $pk->bidang->nama }}
                                 </span>
                             </td>
                             @endif
                             
+                            <!-- Nama Program -->
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">{{ $pk->nama }}</div>
                                 @if($pk->submitted_at)
@@ -515,20 +518,43 @@
                                 @endif
                             </td>
                             
+                            <!-- ✅ TAMBAHKAN: Jenis Pengeluaran -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($pk->jenis_pengeluaran)
+                                    @php
+                                        $jenisBadgeClass = match($pk->jenis_pengeluaran) {
+                                            'Kesekretariatan' => 'bg-blue-100 text-blue-800',
+                                            'Perjalanan Dinas' => 'bg-purple-100 text-purple-800',
+                                            'Aksi' => 'bg-green-100 text-green-800',
+                                            'Dana Sosial', 'Dansos Duka', 'Dansos Banjir', 'Dansos Ekternal' => 'bg-pink-100 text-pink-800',
+                                            'Pendidikan' => 'bg-yellow-100 text-yellow-800',
+                                            'Rapat', 'Rapat GM' => 'bg-gray-100 text-gray-800',
+                                            'COS DPP' => 'bg-indigo-100 text-indigo-800',
+                                            'Iuaran FKJ', 'Iuran GM' => 'bg-orange-100 text-orange-800',
+                                            default => 'bg-gray-100 text-gray-800',
+                                        };
+                                    @endphp
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $jenisBadgeClass }}">
+                                        {{ $pk->jenis_pengeluaran }}
+                                    </span>
+                                @else
+                                    <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </td>
+                            
+                            <!-- Anggaran -->
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-semibold text-gray-900">
                                     Rp {{ number_format($pk->anggaran, 0, ',', '.') }}
                                 </div>
                             </td>
                             
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $pk->tahun }}
-                            </td>
-                            
+                            <!-- Tanggal -->
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $pk->tanggal ? $pk->tanggal->format('d M Y') : '-' }}
                             </td>
                             
+                            <!-- Status -->
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
                                     $statusConfig = [
@@ -547,6 +573,7 @@
                                 </span>
                             </td>
                             
+                            <!-- Aksi -->
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center space-x-2">
                                     <!-- Detail Button -->
@@ -592,7 +619,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ in_array($userRole, ['superadmin', 'sekretaris']) ? '8' : '7' }}" class="px-6 py-16 text-center">
+                            <!-- ✅ UPDATE: colspan disesuaikan (tambah 1 untuk kolom jenis_pengeluaran) -->
+                            <td colspan="{{ in_array($userRole, ['superadmin', 'sekretaris']) ? '9' : '8' }}" class="px-6 py-16 text-center">
                                 <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
@@ -608,7 +636,6 @@
         <!-- Footer: Pagination -->
         @if($programKerjas->hasPages() || $programKerjas->count() > 0)
             <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
-                <!-- ✅ TAMBAHKAN: Showing Info -->
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div class="text-sm text-gray-600 mb-3 md:mb-0">
                         @if($perPage === 'all')

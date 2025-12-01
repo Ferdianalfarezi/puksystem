@@ -43,6 +43,19 @@
                 <span class="text-red-500 text-sm error-message" id="error-create-nama"></span>
             </div>
 
+            <!-- ✅ TAMBAHKAN: Jenis Pengeluaran -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Jenis Pengeluaran <span class="text-red-500">*</span></label>
+                <select id="createJenisPengeluaran" name="jenis_pengeluaran" required
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
+                    <option value="">-- Pilih Jenis Pengeluaran --</option>
+                    @foreach(\App\Models\ProgramKerja::JENIS_PENGELUARAN as $jenis)
+                        <option value="{{ $jenis }}">{{ $jenis }}</option>
+                    @endforeach
+                </select>
+                <span class="text-red-500 text-sm error-message" id="error-create-jenis_pengeluaran"></span>
+            </div>
+
             <!-- Anggaran -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Anggaran <span class="text-red-500">*</span></label>

@@ -16,6 +16,7 @@ class ProgramKerja extends Model
         'bidang_id',
         'nama',
         'anggaran',
+        'jenis_pengeluaran', // ✅ TAMBAHKAN
         'tahun',
         'tanggal',
         'status',
@@ -35,6 +36,23 @@ class ProgramKerja extends Model
         'reviewed_at_bendahara' => 'datetime',
         'reviewed_at_ketua' => 'datetime',
         'tanggal' => 'date',
+    ];
+
+    // ✅ TAMBAHKAN: Konstanta untuk jenis pengeluaran
+    public const JENIS_PENGELUARAN = [
+        'Kesekretariatan',
+        'Perjalanan Dinas',
+        'Aksi',
+        'Dana Sosial',
+        'Dansos Duka',
+        'Dansos Banjir',
+        'Pendidikan',
+        'Rapat',
+        'COS DPP',
+        'Iuaran FKJ',
+        'Dansos Ekternal',
+        'Iuran GM',
+        'Rapat GM'
     ];
 
     // Relationships
@@ -77,6 +95,12 @@ class ProgramKerja extends Model
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);
+    }
+
+    // ✅ TAMBAHKAN: Scope untuk filter jenis pengeluaran
+    public function scopeByJenisPengeluaran($query, $jenis)
+    {
+        return $query->where('jenis_pengeluaran', $jenis);
     }
 
     // Helper methods
@@ -149,6 +173,22 @@ class ProgramKerja extends Model
             'ditolak_bendahara' => 'Ditolak Bendahara',
             'ditolak_ketua' => 'Ditolak Ketua',
             default => ucfirst(str_replace('_', ' ', $this->status)),
+        };
+    }
+
+    // ✅ TAMBAHKAN: Helper untuk badge jenis pengeluaran
+    public function getJenisPengeluaranBadgeClass(): string
+    {
+        return match($this->jenis_pengeluaran) {
+            'Kesekretariatan' => 'bg-blue-100 text-blue-800',
+            'Perjalanan Dinas' => 'bg-purple-100 text-purple-800',
+            'Aksi' => 'bg-green-100 text-green-800',
+            'Dana Sosial', 'Dansos Duka', 'Dansos Banjir', 'Dansos Ekternal' => 'bg-pink-100 text-pink-800',
+            'Pendidikan' => 'bg-yellow-100 text-yellow-800',
+            'Rapat', 'Rapat GM' => 'bg-gray-100 text-gray-800',
+            'COS DPP' => 'bg-indigo-100 text-indigo-800',
+            'Iuaran FKJ', 'Iuran GM' => 'bg-orange-100 text-orange-800',
+            default => 'bg-gray-100 text-gray-800',
         };
     }
 }
