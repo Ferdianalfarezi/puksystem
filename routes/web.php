@@ -9,6 +9,7 @@ use App\Http\Controllers\BendaharaController;
 use App\Http\Controllers\KetuaController;
 use App\Http\Controllers\PencairanController;
 use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\KasController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -65,6 +66,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('history')->name('history.')->group(function () {
         Route::get('/program-kerja', [HistoryController::class, 'index'])->name('program-kerja');
         Route::get('/program-kerja/{programKerja}', [HistoryController::class, 'show'])->name('program-kerja.show');
+    });
+
+    Route::prefix('kas')->name('kas.')->group(function () {
+        Route::get('/', [App\Http\Controllers\KasController::class, 'index'])->name('index');
+        Route::post('/setor', [App\Http\Controllers\KasController::class, 'setor'])->name('setor');
     });
     
 });

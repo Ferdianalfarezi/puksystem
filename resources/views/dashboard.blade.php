@@ -12,7 +12,7 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
         <!-- Total Users -->
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition">
@@ -27,22 +27,6 @@
                 <div class="bg-black rounded-lg p-3">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <!-- Total Roles -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Total Roles</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ \App\Models\Role::count() }}</p>
-                    <p class="text-sm text-gray-500 mt-2">Configured</p>
-                </div>
-                <div class="bg-black rounded-lg p-3">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
                     </svg>
                 </div>
             </div>
@@ -64,17 +48,36 @@
             </div>
         </div>
 
-        <!-- System Status -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition">
+        <!-- Kas Global - PALING KANAN -->
+        @php
+            $kasGlobal = \App\Models\Kas::getGlobal();
+            $userRole = Auth::user()->role->nama ?? '';
+            $canManageKas = in_array($userRole, ['superadmin', 'bendahara']);
+        @endphp
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition {{ $canManageKas ? 'cursor-pointer' : '' }}"
+             @if($canManageKas) onclick="openTambahKasModal()" @endif>
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">System Status</p>
-                    <p class="text-3xl font-bold text-green-600 mt-2">Active</p>
-                    <p class="text-sm text-gray-500 mt-2">All Systems Running</p>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-sm font-medium text-gray-600">Kas Global</p>
+                        @if($canManageKas)
+                        <button onclick="event.stopPropagation(); openTambahKasModal()" class="bg-green-100 text-green-700 rounded-full p-1 hover:bg-green-200 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                        </button>
+                        @endif
+                    </div>
+                    <p class="text-2xl font-bold {{ $kasGlobal->saldo >= 0 ? 'text-green-600' : 'text-red-600' }} mt-2">
+                        Rp {{ number_format($kasGlobal->saldo, 0, ',', '.') }}
+                    </p>
+                    <p class="text-sm text-gray-500 mt-2">
+                        {{ $kasGlobal->saldo >= 0 ? 'Available' : 'Deficit' }}
+                    </p>
                 </div>
-                <div class="bg-black rounded-lg p-3">
+                <div class="bg-green-600 rounded-lg p-3">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
             </div>
@@ -219,4 +222,16 @@
         </div>
     </div>
 </div>
+
+<!-- Include Tambah Kas Modal -->
+@if($canManageKas)
+    @include('bendahara.tambah-kas-modal')
+@endif
+
 @endsection
+
+@if($canManageKas)
+@push('scripts')
+<script src="{{ asset('js/tambah-kas.js') }}"></script>
+@endpush
+@endif

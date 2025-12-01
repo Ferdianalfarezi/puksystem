@@ -203,7 +203,7 @@
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Waktu</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pencairan</th>
-                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Detail</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -263,11 +263,15 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center space-x-2">
                                     <a href="{{ route('history.program-kerja.show', $pk->id) }}"
-                                       class="bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-600 transition">
-                                        Detail History
+                                    class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
+                                    title="Detail History">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
                                     </a>
                                 </div>
                             </td>
+
                         </tr>
                     @empty
                         <tr>

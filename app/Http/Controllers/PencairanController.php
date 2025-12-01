@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ProgramKerja;
 use App\Models\Pencairan;
 use App\Models\ProgramKerjaHistory;
+use App\Models\Kas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,10 @@ class PencairanController extends Controller
             ->latest('reviewed_at_ketua')
             ->paginate(10);
 
-        return view('pencairan.index', compact('programKerjas'));
+        // Ambil saldo kas untuk ditampilkan di view
+        $kasGlobal = Kas::getGlobal();
+
+        return view('pencairan.index', compact('programKerjas', 'kasGlobal'));
     }
 
     public function show(ProgramKerja $programKerja)
@@ -50,9 +54,13 @@ class PencairanController extends Controller
 
         DB::beginTransaction();
         try {
+            $kasGlobal = Kas::getGlobal();
             $statusLama = $programKerja->status;
+            $saldoSebelum = $kasGlobal->saldo;
+            $saldoSesudah = $saldoSebelum - $validated['jumlah_dicairkan'];
 
-            Pencairan::create([
+            // Create pencairan record
+            $pencairan = Pencairan::create([
                 'program_kerja_id' => $programKerja->id,
                 'tanggal_program' => $programKerja->tanggal,
                 'jumlah_dicairkan' => $validated['jumlah_dicairkan'],
@@ -63,16 +71,29 @@ class PencairanController extends Controller
                 'dicairkan_oleh' => Auth::id(),
             ]);
 
-            $programKerja->update([
-                'status' => 'dicairkan',
-            ]);
+            // Kurangi saldo kas dan create history
+            $historyKas = $kasGlobal->kurangiSaldo(
+                jumlah: $validated['jumlah_dicairkan'],
+                keterangan: "Pencairan: {$programKerja->nama} ({$programKerja->bidang->nama})",
+                userId: Auth::id(),
+                referable: $pencairan
+            );
 
+            // Update pencairan dengan history_kas_id
+            $pencairan->update(['history_kas_id' => $historyKas->id]);
+
+            // Update program kerja status
+            $programKerja->update(['status' => 'dicairkan']);
+
+            // Create program kerja history
             ProgramKerjaHistory::create([
                 'program_kerja_id' => $programKerja->id,
                 'tanggal_program' => $programKerja->tanggal,
                 'status_dari' => $statusLama,
                 'status_ke' => 'dicairkan',
-                'catatan' => 'Dana dicairkan sebesar Rp ' . number_format($validated['jumlah_dicairkan'], 0, ',', '.') . ' via ' . $validated['metode_pencairan'],
+                'catatan' => 'Dana dicairkan sebesar Rp ' . number_format($validated['jumlah_dicairkan'], 0, ',', '.') 
+                          . ' via ' . $validated['metode_pencairan'] 
+                          . '. Saldo kas: Rp ' . number_format($saldoSesudah, 0, ',', '.'),
                 'dilakukan_oleh' => Auth::id(),
                 'dilakukan_pada' => now(),
                 'data_snapshot' => [
@@ -80,6 +101,8 @@ class PencairanController extends Controller
                     'anggaran' => $programKerja->anggaran,
                     'jumlah_dicairkan' => $validated['jumlah_dicairkan'],
                     'metode_pencairan' => $validated['metode_pencairan'],
+                    'saldo_kas_sebelum' => $saldoSebelum,
+                    'saldo_kas_sesudah' => $saldoSesudah,
                     'bidang' => $programKerja->bidang->nama,
                     'tahun' => $programKerja->tahun,
                     'tanggal' => $programKerja->tanggal ? $programKerja->tanggal->format('Y-m-d') : null,
@@ -90,7 +113,7 @@ class PencairanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Dana berhasil dicairkan.'
+                'message' => 'Dana berhasil dicairkan. Saldo kas saat ini: Rp ' . number_format($saldoSesudah, 0, ',', '.')
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

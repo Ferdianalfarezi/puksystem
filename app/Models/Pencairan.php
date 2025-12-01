@@ -19,6 +19,7 @@ class Pencairan extends Model
         'nomor_referensi',
         'catatan',
         'dicairkan_oleh',
+        'history_kas_id',
     ];
 
     protected $casts = [
@@ -50,5 +51,15 @@ class Pencairan extends Model
             'cek' => 'Cek',
             default => ucfirst($this->metode_pencairan),
         };
+    }
+
+    public function historyKas(): BelongsTo
+    {
+        return $this->belongsTo(HistoryKas::class);
+    }
+
+    public function kasHistories()
+    {
+        return $this->morphMany(HistoryKas::class, 'referable');
     }
 }
