@@ -17,6 +17,9 @@ class ProgramKerjaController extends Controller
         
         $allBidangs = \App\Models\Bidang::orderBy('nama')->get();
         
+        // ✅ TAMBAHKAN: Get perPage parameter (default 20)
+        $perPage = $request->get('perPage', 20);
+        
         if (in_array($userRole, ['superadmin', 'sekretaris'])) {
             $bidangs = $allBidangs;
             $selectedBidangId = $request->get('bidang_id', 'all');
@@ -28,18 +31,35 @@ class ProgramKerjaController extends Controller
             }
             
             $allProgramKerjas = $baseQuery->get();
-            $programKerjas = $baseQuery->latest()->paginate(10);
             
+            // ✅ UPDATE: Handle "all" case
+            if ($perPage === 'all') {
+                $programKerjas = $baseQuery->latest()->get();
+                // Convert to LengthAwarePaginator for consistent interface
+                $programKerjas = new \Illuminate\Pagination\LengthAwarePaginator(
+                    $programKerjas,
+                    $programKerjas->count(),
+                    $programKerjas->count(),
+                    1,
+                    ['path' => $request->url(), 'query' => $request->query()]
+                );
+            } else {
+                $programKerjas = $baseQuery->latest()->paginate($perPage);
+            }
+            
+            // ✅ TAMBAHKAN: Append perPage ke pagination links
             if ($selectedBidangId !== 'all') {
                 $programKerjas->appends(['bidang_id' => $selectedBidangId]);
             }
+            $programKerjas->appends(['perPage' => $perPage]);
             
             return view('program-kerja.index', compact(
                 'programKerjas',
                 'allProgramKerjas',
                 'bidangs', 
                 'selectedBidangId', 
-                'allBidangs'
+                'allBidangs',
+                'perPage' // ✅ PASS ke view
             ));
             
         } else {
@@ -47,7 +67,23 @@ class ProgramKerjaController extends Controller
                 ->forBidang($user->bidang_id);
             
             $allProgramKerjas = $baseQuery->get();
-            $programKerjas = $baseQuery->latest()->paginate(10);
+            
+            // ✅ UPDATE: Handle "all" case
+            if ($perPage === 'all') {
+                $programKerjas = $baseQuery->latest()->get();
+                $programKerjas = new \Illuminate\Pagination\LengthAwarePaginator(
+                    $programKerjas,
+                    $programKerjas->count(),
+                    $programKerjas->count(),
+                    1,
+                    ['path' => $request->url(), 'query' => $request->query()]
+                );
+            } else {
+                $programKerjas = $baseQuery->latest()->paginate($perPage);
+            }
+            
+            // ✅ TAMBAHKAN: Append perPage ke pagination links
+            $programKerjas->appends(['perPage' => $perPage]);
             
             $bidangs = collect();
             $selectedBidangId = null;
@@ -57,7 +93,8 @@ class ProgramKerjaController extends Controller
                 'allProgramKerjas',
                 'bidangs', 
                 'selectedBidangId', 
-                'allBidangs'
+                'allBidangs',
+                'perPage' // ✅ PASS ke view
             ));
         }
     }

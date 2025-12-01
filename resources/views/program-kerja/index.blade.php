@@ -181,35 +181,77 @@
         @endphp
 
         @php
-            // Hitung Planning dan Actual (jumlah program)
-            $planning = array_fill(1, 12, 0);
-            $actual = array_fill(1, 12, 0);
-            
-            // ✅ TAMBAHKAN: Hitung total anggaran
-            $planningBudget = array_fill(1, 12, 0);
-            $actualBudget = array_fill(1, 12, 0);
-
-            foreach ($allProgramKerjas as $pk) {
-                $month = \Carbon\Carbon::parse($pk->tanggal)->month;
-                
-                // Planning: semua data KECUALI draft
-                if ($pk->status !== 'draft') {
-                    $planning[$month]++;
-                    $planningBudget[$month] += $pk->anggaran; // ✅ Akumulasi anggaran planning
-                }
-                
-                // Actual: hanya yang dicairkan
-                if ($pk->status === 'dicairkan') {
-                    $actual[$month]++;
-                    $actualBudget[$month] += $pk->anggaran; // ✅ Akumulasi anggaran actual
-                }
-            }
-
+            // ✅ Deklarasi monthNames di awal
             $monthNames = [
                 1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
                 5 => 'Mei', 6 => 'Jun', 7 => 'Jul', 8 => 'Agu',
                 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des'
             ];
+
+            // Hitung Planning dan Actual untuk tahun sekarang (untuk backward compatibility)
+            $planning = array_fill(1, 12, 0);
+            $actual = array_fill(1, 12, 0);
+            $planningBudget = array_fill(1, 12, 0);
+            $actualBudget = array_fill(1, 12, 0);
+
+            foreach ($allProgramKerjas as $pk) {
+                $pkDate = \Carbon\Carbon::parse($pk->tanggal);
+                
+                // Hanya hitung untuk tahun sekarang
+                if ($pkDate->year == now()->year) {
+                    $month = $pkDate->month;
+                    
+                    // Planning: semua data KECUALI draft
+                    if ($pk->status !== 'draft') {
+                        $planning[$month]++;
+                        $planningBudget[$month] += $pk->anggaran;
+                    }
+                    
+                    // Actual: hanya yang dicairkan
+                    if ($pk->status === 'dicairkan') {
+                        $actual[$month]++;
+                        $actualBudget[$month] += $pk->anggaran;
+                    }
+                }
+            }
+
+            // ✅ Siapkan data untuk semua tahun (untuk chart dengan dropdown tahun)
+            $yearRange = range(now()->year - 2, now()->year + 2);
+            $chartDataByYear = [];
+            
+            foreach ($yearRange as $year) {
+                $planningYear = array_fill(1, 12, 0);
+                $actualYear = array_fill(1, 12, 0);
+                $planningBudgetYear = array_fill(1, 12, 0);
+                $actualBudgetYear = array_fill(1, 12, 0);
+                
+                foreach ($allProgramKerjas as $pk) {
+                    $pkYear = \Carbon\Carbon::parse($pk->tanggal)->year;
+                    
+                    if ($pkYear == $year) {
+                        $month = \Carbon\Carbon::parse($pk->tanggal)->month;
+                        
+                        // Planning: semua data KECUALI draft
+                        if ($pk->status !== 'draft') {
+                            $planningYear[$month]++;
+                            $planningBudgetYear[$month] += $pk->anggaran;
+                        }
+                        
+                        // Actual: hanya yang dicairkan
+                        if ($pk->status === 'dicairkan') {
+                            $actualYear[$month]++;
+                            $actualBudgetYear[$month] += $pk->anggaran;
+                        }
+                    }
+                }
+                
+                $chartDataByYear[$year] = [
+                    'planning' => array_values($planningYear),
+                    'actual' => array_values($actualYear),
+                    'planningBudget' => array_values($planningBudgetYear),
+                    'actualBudget' => array_values($actualBudgetYear),
+                ];
+            }
         @endphp
 
         <!-- VIEW BULANAN -->
@@ -351,60 +393,84 @@
 
     <!-- ===== MONTHLY BAR CHART ===== -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
-        <h2 class="text-lg font-bold text-gray-900 mb-4">Grafik Perbandingan Planning vs Actual Program kerja</h2>
+        <!-- ✅ TAMBAHKAN: Header dengan Year Selector -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <h2 class="text-lg font-bold text-gray-900">Grafik Perbandingan Planning vs Actual Program Kerja</h2>
+            
+            <div class="flex items-center space-x-2">
+                <label class="text-sm text-gray-600 font-medium">Tahun:</label>
+                <select id="selectChartYear" onchange="updateChart()" 
+                        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
+                    @for($y = now()->year - 2; $y <= now()->year + 2; $y++)
+                        <option value="{{ $y }}" {{ $y == now()->year ? 'selected' : '' }}>{{ $y }}</option>
+                    @endfor
+                </select>
+            </div>
+        </div>
+        
         <canvas id="monthlyBarChart" height="50"></canvas>
     </div>
 
     <!-- Search & Filter -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between md:space-x-4 space-y-3 md:space-y-0">
-            <!-- Filter Bidang (Hanya untuk Superadmin & Sekretaris) -->
-            @if(in_array($userRole, ['superadmin', 'sekretaris']))
-            <div class="w-full md:w-auto">
-                <select id="filterBidang" onchange="filterByBidang()" class="w-full md:w-64 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
-                    <option value="all" {{ (isset($selectedBidangId) && $selectedBidangId === 'all') ? 'selected' : '' }}>
-                        📋 Semua Bidang
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between md:space-x-4 space-y-3 md:space-y-0">
+        <!-- Filter Bidang (Hanya untuk Superadmin & Sekretaris) -->
+        @if(in_array($userRole, ['superadmin', 'sekretaris']))
+        <div class="w-full md:w-auto">
+            <select id="filterBidang" onchange="filterByBidang()" class="w-full md:w-64 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
+                <option value="all" {{ (isset($selectedBidangId) && $selectedBidangId === 'all') ? 'selected' : '' }}>
+                    📋 Semua Bidang
+                </option>
+                @foreach($bidangs as $bidang)
+                    <option value="{{ $bidang->id }}" {{ (isset($selectedBidangId) && $selectedBidangId == $bidang->id) ? 'selected' : '' }}>
+                        {{ $bidang->nama }}
                     </option>
-                    @foreach($bidangs as $bidang)
-                        <option value="{{ $bidang->id }}" {{ (isset($selectedBidangId) && $selectedBidangId == $bidang->id) ? 'selected' : '' }}>
-                            {{ $bidang->nama }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            @endif
+                @endforeach
+            </select>
+        </div>
+        @endif
 
-            <!-- Search Box -->
-            <div class="w-full md:w-1/2 lg:w-1/3 relative">
-                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                </div>
-                <input 
-                    type="text" 
-                    id="searchInput"
-                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
-                    placeholder="Cari program kerja..."
-                    onkeyup="searchTable()"
-                >
+        <!-- Search Box -->
+        <div class="w-full md:flex-1 relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
             </div>
+            <input 
+                type="text" 
+                id="searchInput"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
+                placeholder="Cari program kerja..."
+                onkeyup="searchTable()"
+            >
+        </div>
 
-            <!-- Filter Status -->
-            <div class="w-full md:w-auto">
-                <select id="filterStatus" onchange="filterByStatus()" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
-                    <option value="">Semua Status</option>
-                    <option value="draft">Draft</option>
-                    <option value="menunggu_konfirmasi_bendahara">Menunggu Bendahara</option>
-                    <option value="menunggu_approval_ketua">Menunggu Ketua</option>
-                    <option value="menunggu_pencairan">Menunggu Pencairan</option>
-                    <option value="dicairkan">Dicairkan</option>
-                    <option value="ditolak_bendahara">Ditolak Bendahara</option>
-                    <option value="ditolak_ketua">Ditolak Ketua</option>
-                </select>
-            </div>
+        <!-- Filter Status -->
+        <div class="w-full md:w-auto">
+            <select id="filterStatus" onchange="filterByStatus()" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
+                <option value="">Semua Status</option>
+                <option value="draft">Draft</option>
+                <option value="menunggu_konfirmasi_bendahara">Menunggu Bendahara</option>
+                <option value="menunggu_approval_ketua">Menunggu Ketua</option>
+                <option value="menunggu_pencairan">Menunggu Pencairan</option>
+                <option value="dicairkan">Dicairkan</option>
+                <option value="ditolak_bendahara">Ditolak Bendahara</option>
+                <option value="ditolak_ketua">Ditolak Ketua</option>
+            </select>
+        </div>
+
+        <!-- ✅ TAMBAHKAN: Show Per Page -->
+        <div class="w-full md:w-auto">
+            <select id="perPageSelect" onchange="changePerPage()" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
+                <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20 / halaman</option>
+                <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50 / halaman</option>
+                <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100 / halaman</option>
+                <option value="all" {{ $perPage === 'all' ? 'selected' : '' }}>Semua</option>
+            </select>
         </div>
     </div>
+</div>
 
     <!-- Table Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -540,9 +606,25 @@
         </div>
 
         <!-- Footer: Pagination -->
-        @if($programKerjas->hasPages())
+        @if($programKerjas->hasPages() || $programKerjas->count() > 0)
             <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
-                {{ $programKerjas->links() }}
+                <!-- ✅ TAMBAHKAN: Showing Info -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div class="text-sm text-gray-600 mb-3 md:mb-0">
+                        @if($perPage === 'all')
+                            Menampilkan <span class="font-semibold">{{ $programKerjas->total() }}</span> data
+                        @else
+                            Menampilkan <span class="font-semibold">{{ $programKerjas->firstItem() }}</span> 
+                            sampai <span class="font-semibold">{{ $programKerjas->lastItem() }}</span> 
+                            dari <span class="font-semibold">{{ $programKerjas->total() }}</span> data
+                        @endif
+                    </div>
+                    
+                    <!-- Pagination Links -->
+                    @if($perPage !== 'all')
+                        {{ $programKerjas->links() }}
+                    @endif
+                </div>
             </div>
         @endif
     </div>
@@ -559,6 +641,23 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @push('scripts')
 <script>
+
+    function changePerPage() {
+        const perPage = document.getElementById('perPageSelect').value;
+        const url = new URL(window.location.href);
+        
+        url.searchParams.set('perPage', perPage);
+        
+        // Keep existing filters
+        @if(in_array($userRole, ['superadmin', 'sekretaris']))
+        const bidangId = document.getElementById('filterBidang').value;
+        if (bidangId !== 'all') {
+            url.searchParams.set('bidang_id', bidangId);
+        }
+        @endif
+        
+        window.location.href = url.toString();
+    }
     // Filter by Bidang
     function filterByBidang() {
         const bidangId = document.getElementById('filterBidang').value;
@@ -569,6 +668,10 @@
         } else {
             url.searchParams.set('bidang_id', bidangId);
         }
+        
+        // ✅ PRESERVE perPage saat ganti bidang
+        const perPage = document.getElementById('perPageSelect').value;
+        url.searchParams.set('perPage', perPage);
         
         window.location.href = url.toString();
     }
@@ -1071,14 +1174,14 @@ function adjustTooltipPosition() {
     });
 }
 
-// Scroll to program row in table
+// Scroll to program row in table dan buka detail modal
 function scrollToProgram(programId) {
     const table = document.getElementById('programKerjaTable');
     const rows = table.querySelectorAll('tbody tr');
     
     rows.forEach((row, index) => {
-        // Cari row yang mengandung program ID ini
-        const detailButton = row.querySelector(`a[href*="/program-kerja/${programId}"]`);
+        // ✅ FIX: Cari button detail dengan onclick yang mengandung programId
+        const detailButton = row.querySelector(`button[onclick*="openDetailModal(${programId})"]`);
         
         if (detailButton) {
             // Highlight row sementara
@@ -1100,31 +1203,42 @@ function scrollToProgram(programId) {
                 row.style.transform = 'scale(1)';
             }, 400);
             
-            // Remove highlight setelah 3 detik
+            // Remove highlight setelah 2 detik
             setTimeout(() => {
                 row.classList.remove('bg-blue-100', 'ring-2', 'ring-blue-400');
             }, 2000);
+            
+            // ✅ AUTO OPEN DETAIL MODAL setelah scroll selesai
+            setTimeout(() => {
+                openDetailModal(programId);
+            }, 800);
         }
     });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
     const ctx = document.getElementById("monthlyBarChart").getContext("2d");
-
-    const chart = new Chart(ctx, {
+    
+    // ✅ Data dari PHP untuk semua tahun
+    const chartDataByYear = @json($chartDataByYear);
+    const monthNames = @json(array_values($monthNames));
+    const currentYear = {{ now()->year }};
+    
+    // ✅ Initialize chart
+    let monthlyBarChart = new Chart(ctx, {
         type: "bar",
         data: {
-            labels: @json(array_values($monthNames)),
+            labels: monthNames,
             datasets: [
                 {
                     label: "Planning",
-                    data: @json(array_values($planning)),
+                    data: chartDataByYear[currentYear].planning,
                     backgroundColor: "rgba(150,150,150,0.6)",
                     borderRadius: 6,
                 },
                 {
                     label: "Actual (Dicairkan)",
-                    data: @json(array_values($actual)),
+                    data: chartDataByYear[currentYear].actual,
                     backgroundColor: "rgba(16,185,129,0.8)",
                     borderRadius: 6,
                 }
@@ -1141,26 +1255,21 @@ document.addEventListener("DOMContentLoaded", function () {
             plugins: {
                 tooltip: {
                     callbacks: {
-                        // ✅ Custom tooltip untuk menampilkan jumlah program + total anggaran
                         label: function(context) {
                             const datasetLabel = context.dataset.label || '';
                             const count = context.parsed.y;
-                            const monthIndex = context.dataIndex + 1; // bulan 1-12
+                            const selectedYear = parseInt(document.getElementById('selectChartYear').value);
                             
-                            // ✅ Ambil data anggaran dari PHP
-                            const planningBudgets = @json(array_values($planningBudget));
-                            const actualBudgets = @json(array_values($actualBudget));
+                            const planningBudgets = chartDataByYear[selectedYear].planningBudget;
+                            const actualBudgets = chartDataByYear[selectedYear].actualBudget;
                             
                             let budget = 0;
                             if (context.datasetIndex === 0) {
-                                // Planning
                                 budget = planningBudgets[context.dataIndex];
                             } else {
-                                // Actual
                                 budget = actualBudgets[context.dataIndex];
                             }
                             
-                            // Format angka dengan pemisah ribuan
                             const formattedBudget = new Intl.NumberFormat('id-ID').format(budget);
                             
                             return [
@@ -1186,6 +1295,17 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
+    
+    // ✅ TAMBAHKAN: Function untuk update chart saat ganti tahun
+    window.updateChart = function() {
+        const selectedYear = parseInt(document.getElementById('selectChartYear').value);
+        
+        if (chartDataByYear[selectedYear]) {
+            monthlyBarChart.data.datasets[0].data = chartDataByYear[selectedYear].planning;
+            monthlyBarChart.data.datasets[1].data = chartDataByYear[selectedYear].actual;
+            monthlyBarChart.update('active'); // smooth animation
+        }
+    };
 });
 
 </script>
