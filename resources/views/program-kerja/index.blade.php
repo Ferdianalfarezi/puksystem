@@ -43,73 +43,316 @@
         </div>
 
         <!-- Statistics Badges -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <!-- Total Program -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Total Program</p>
-                        <p class="text-2xl font-bold text-blue-900 mt-1">{{ $programKerjas->total() }}</p>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Total Program -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Total Program</p>
+                            <p class="text-2xl font-bold text-blue-900 mt-1">{{ $allProgramKerjas->count() }}</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                        </div>
                     </div>
-                    <div class="bg-blue-100 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
+                </div>
+
+                <!-- Draft - tetap pakai $allProgramKerjas -->
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Draft</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1">
+                                {{ $allProgramKerjas->where('status', 'draft')->count() }}
+                            </p>
+                        </div>
+                        <div class="bg-gray-100 p-3 rounded-lg">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Proses Approval - tetap pakai $allProgramKerjas -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-yellow-600 uppercase tracking-wider">Proses Approval</p>
+                            <p class="text-2xl font-bold text-yellow-900 mt-1">
+                                {{ $allProgramKerjas->whereIn('status', ['menunggu_konfirmasi_bendahara', 'menunggu_approval_ketua', 'menunggu_pencairan'])->count() }}
+                            </p>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-lg">
+                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dicairkan - tetap pakai $allProgramKerjas -->
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-green-600 uppercase tracking-wider">Dicairkan</p>
+                            <p class="text-2xl font-bold text-green-900 mt-1">
+                                {{ $allProgramKerjas->where('status', 'dicairkan')->count() }}
+                            </p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Draft -->
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Draft</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">
-                            {{ $programKerjas->where('status', 'draft')->count() }}
-                        </p>
-                    </div>
-                    <div class="bg-gray-100 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
-                    </div>
+    </div>
+    
+    <!-- ===== GANTT CHART KHUSUS STATUS DICAIRKAN ===== -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+        
+        <!-- Header dengan Toggle View -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <h2 class="text-lg font-bold text-gray-900">Kalender Program Kerja (Disetujui)</h2>
+            
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-3">
+                <!-- Month Selector (Hanya untuk View Bulanan) -->
+                <div id="monthSelector" class="flex items-center space-x-2">
+                    <label class="text-sm text-gray-600 font-medium">Bulan:</label>
+                    <select id="selectMonth" onchange="changeMonth()" 
+                            class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
+                        <option value="1">Januari</option>
+                        <option value="2">Februari</option>
+                        <option value="3">Maret</option>
+                        <option value="4">April</option>
+                        <option value="5">Mei</option>
+                        <option value="6">Juni</option>
+                        <option value="7">Juli</option>
+                        <option value="8">Agustus</option>
+                        <option value="9">September</option>
+                        <option value="10">Oktober</option>
+                        <option value="11">November</option>
+                        <option value="12">Desember</option>
+                    </select>
+                    <select id="selectYear" onchange="changeMonth()" 
+                            class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
+                        @for($y = now()->year - 2; $y <= now()->year + 2; $y++)
+                            <option value="{{ $y }}" {{ $y == now()->year ? 'selected' : '' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
                 </div>
-            </div>
-
-            <!-- Proses Approval -->
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold text-yellow-600 uppercase tracking-wider">Proses Approval</p>
-                        <p class="text-2xl font-bold text-yellow-900 mt-1">
-                            {{ $programKerjas->whereIn('status', ['menunggu_konfirmasi_bendahara', 'menunggu_approval_ketua', 'menunggu_pencairan'])->count() }}
-                        </p>
-                    </div>
-                    <div class="bg-yellow-100 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dicairkan -->
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold text-green-600 uppercase tracking-wider">Dicairkan</p>
-                        <p class="text-2xl font-bold text-green-900 mt-1">
-                            {{ $programKerjas->where('status', 'dicairkan')->count() }}
-                        </p>
-                    </div>
-                    <div class="bg-green-100 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
+                
+                <!-- Toggle Bulanan/Tahunan -->
+                <div class="flex items-center space-x-2">
+                    <button id="btnMonthly" onclick="switchView('monthly')" 
+                            class="px-4 py-2 text-sm font-semibold rounded-lg transition bg-black text-white">
+                        Bulanan
+                    </button>
+                    <button id="btnYearly" onclick="switchView('yearly')" 
+                            class="px-4 py-2 text-sm font-semibold rounded-lg transition bg-gray-200 text-gray-700 hover:bg-gray-300">
+                        Tahunan
+                    </button>
                 </div>
             </div>
         </div>
+
+        @php
+            $dicairkan = $allProgramKerjas->filter(fn($p) => $p->status === 'dicairkan');
+            $currentMonth = now()->month;
+            $currentYear = now()->year;
+        @endphp
+
+        @php
+            $colorMap = [
+                'Bidang Organisasi'       => '#3b82f6',
+                'Bidang Pendidikan'       => '#6366f1',
+                'Bidang Hubungan Industrial' => '#10b981',
+                'Bidang Sosial Ekonomi'   => '#f59e0b',
+                'Bidang Upah dan Bonus'   => '#ef4444',
+                'Bidang Umum'             => '#8b5cf6',
+                'Ketua'                   => '#14b8a6',
+                'Bendahara'               => '#ec4899',
+                'Sekretaris'              => '#a3e635',
+            ];
+        @endphp
+
+        @php
+            // Hitung Planning dan Actual (jumlah program)
+            $planning = array_fill(1, 12, 0);
+            $actual = array_fill(1, 12, 0);
+            
+            // ✅ TAMBAHKAN: Hitung total anggaran
+            $planningBudget = array_fill(1, 12, 0);
+            $actualBudget = array_fill(1, 12, 0);
+
+            foreach ($allProgramKerjas as $pk) {
+                $month = \Carbon\Carbon::parse($pk->tanggal)->month;
+                
+                // Planning: semua data KECUALI draft
+                if ($pk->status !== 'draft') {
+                    $planning[$month]++;
+                    $planningBudget[$month] += $pk->anggaran; // ✅ Akumulasi anggaran planning
+                }
+                
+                // Actual: hanya yang dicairkan
+                if ($pk->status === 'dicairkan') {
+                    $actual[$month]++;
+                    $actualBudget[$month] += $pk->anggaran; // ✅ Akumulasi anggaran actual
+                }
+            }
+
+            $monthNames = [
+                1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
+                5 => 'Mei', 6 => 'Jun', 7 => 'Jul', 8 => 'Agu',
+                9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des'
+            ];
+        @endphp
+
+        <!-- VIEW BULANAN -->
+        <div id="monthlyView">
+            @php
+                $bulanIndo = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            @endphp
+            <p id="monthLabel" class="text-sm text-gray-600 mb-3">📅 {{ $bulanIndo[now()->month] }} {{ now()->year }}</p>
+            
+            <!-- Container untuk grid yang akan di-update -->
+            <div id="monthlyGridContainer">
+                @php
+                    $daysInMonth = now()->daysInMonth;
+                @endphp
+                
+                <!-- Header Kalender Bulanan -->
+                <div class="grid gap-1" id="monthlyHeader" style="grid-template-columns: repeat({{ $daysInMonth }}, 1fr);">
+                    @for($d=1; $d <= $daysInMonth; $d++)
+                        <div class="text-xs text-center text-gray-500 font-semibold p-2 bg-gray-50 rounded">{{ $d }}</div>
+                    @endfor
+                </div>
+                        
+                <!-- Body Gantt Bulanan -->
+                <div class="mt-2 grid gap-1" id="monthlyBody" style="grid-template-columns: repeat({{ $daysInMonth }}, 1fr);">
+                    @php
+                        $monthlyData = [];
+                        foreach($dicairkan as $pk) {
+                            $tanggal = \Carbon\Carbon::parse($pk->tanggal);
+                            if ($tanggal->month == $currentMonth && $tanggal->year == $currentYear) {
+                                $day = $tanggal->day;
+                                if (!isset($monthlyData[$day])) {
+                                    $monthlyData[$day] = [];
+                                }
+                                $monthlyData[$day][] = $pk;
+                            }
+                        }
+                    @endphp
+                    
+                    @for($d = 1; $d <= $daysInMonth; $d++)
+                        <div class="min-h-[60px] bg-gray-50 rounded p-1 space-y-1">
+                            @if(isset($monthlyData[$d]))
+                                @foreach($monthlyData[$d] as $program)
+                                    <div class="group relative">
+                                        <div onclick="scrollToProgram({{ $program->id }})"
+                                            class="rounded h-6 cursor-pointer transition-all duration-200 transform hover:scale-105"
+                                            style="background-color: {{ $colorMap[$program->bidang->nama] ?? '#6b7280' }};">
+                                        </div>
+                                        
+                                        <!-- Tooltip on Hover -->
+                                        <div class="tooltip-monthly absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 hidden group-hover:block w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 pointer-events-none">
+                                            <div class="font-bold mb-1">{{ $program->nama }}</div>
+                                            <div class="text-gray-300">📁 Bidang: {{ $program->bidang->nama }}</div>
+                                            <div class="text-gray-300">💰 Anggaran: Rp {{ number_format($program->anggaran, 0, ',', '.') }}</div>
+                                            <div class="text-gray-300">📅 Tanggal: {{ \Carbon\Carbon::parse($program->tanggal)->format('d M Y') }}</div>
+                                            <div class="text-gray-400 text-[10px] mt-2 italic">💡 Klik untuk lihat detail</div>
+                                            <!-- Arrow -->
+                                            <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+                    @endfor
+                </div>
+
+                @if(count($monthlyData) == 0)
+                    <p class="text-sm text-gray-500 text-center py-8" id="monthlyEmpty">Tidak ada program yang dilaksanakan bulan ini</p>
+                @endif
+            </div>
+        </div>
+
+        <!-- VIEW TAHUNAN -->
+        <div id="yearlyView" class="hidden">
+            <p class="text-sm text-gray-600 mb-3">📅 Tahun {{ $currentYear }}</p>
+            
+            <!-- Header Kalender Tahunan -->
+            <div class="grid gap-2" style="grid-template-columns: repeat(12, 1fr);">
+                @foreach(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $month)
+                    <div class="text-xs text-center text-gray-700 font-bold p-2 bg-gray-50 rounded">{{ $month }}</div>
+                @endforeach
+            </div>
+
+            <!-- Body Gantt Tahunan -->
+            <div class="mt-2 grid gap-2" style="grid-template-columns: repeat(12, 1fr);">
+                @php
+                    $yearlyData = [];
+                    foreach($dicairkan as $pk) {
+                        $tanggal = \Carbon\Carbon::parse($pk->tanggal);
+                        if ($tanggal->year == $currentYear) {
+                            $month = $tanggal->month;
+                            if (!isset($yearlyData[$month])) {
+                                $yearlyData[$month] = [];
+                            }
+                            $yearlyData[$month][] = $pk;
+                        }
+                    }
+                @endphp
+                
+                @for($m = 1; $m <= 12; $m++)
+                    <div class="min-h-[100px] bg-gray-50 rounded p-2 space-y-2">
+                        @if(isset($yearlyData[$m]))
+                            @foreach($yearlyData[$m] as $program)
+                                <div class="group relative">
+                                    <div onclick="scrollToProgram({{ $program->id }})"
+                                        class="rounded h-8 cursor-pointer transition-all duration-200 transform hover:scale-105"
+                                        style="background-color: {{ $colorMap[$program->bidang->nama] ?? '#6b7280' }};">
+                                    </div>
+                                    
+                                    <!-- Tooltip on Hover -->
+                                    <div class="tooltip-yearly absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 hidden group-hover:block w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 pointer-events-none">
+                                        <div class="font-bold mb-1">{{ $program->nama }}</div>
+                                        <div class="text-gray-300">📁 Bidang: {{ $program->bidang->nama }}</div>
+                                        <div class="text-gray-300">💰 Anggaran: Rp {{ number_format($program->anggaran, 0, ',', '.') }}</div>
+                                        <div class="text-gray-300">📅 Tanggal: {{ \Carbon\Carbon::parse($program->tanggal)->format('d M Y') }}</div>
+                                        <div class="text-gray-400 text-[10px] mt-2 italic">💡 Klik untuk lihat detail</div>
+                                        <!-- Arrow -->
+                                        <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                                    </div>
+                                </div>
+                            @endforeach
+                            
+                            @if(count($yearlyData[$m]) > 1)
+                                <div class="text-[10px] text-gray-500 text-center mt-1">
+                                    +{{ count($yearlyData[$m]) }} program
+                                </div>
+                            @endif
+                        @endif
+                    </div>
+                @endfor
+            </div>
+
+            @if(count($yearlyData) == 0)
+                <p class="text-sm text-gray-500 text-center py-8">Tidak ada program yang dicairkan tahun ini</p>
+            @endif
+        </div>
+
+    </div>
+    <!-- ===== END GANTT ===== -->
+
+    <!-- ===== MONTHLY BAR CHART ===== -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Grafik Perbandingan Planning vs Actual Program kerja</h2>
+        <canvas id="monthlyBarChart" height="50"></canvas>
     </div>
 
     <!-- Search & Filter -->
@@ -162,195 +405,6 @@
             </div>
         </div>
     </div>
-    
-   
-<!-- ===== GANTT CHART KHUSUS STATUS DICAIRKAN ===== -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
-    
-    <!-- Header dengan Toggle View -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <h2 class="text-lg font-bold text-gray-900">Kalender Program Kerja (Disetujui)</h2>
-        
-        <div class="flex flex-col md:flex-row items-start md:items-center gap-3">
-            <!-- Month Selector (Hanya untuk View Bulanan) -->
-            <div id="monthSelector" class="flex items-center space-x-2">
-                <label class="text-sm text-gray-600 font-medium">Bulan:</label>
-                <select id="selectMonth" onchange="changeMonth()" 
-                        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
-                    <option value="1">Januari</option>
-                    <option value="2">Februari</option>
-                    <option value="3">Maret</option>
-                    <option value="4">April</option>
-                    <option value="5">Mei</option>
-                    <option value="6">Juni</option>
-                    <option value="7">Juli</option>
-                    <option value="8">Agustus</option>
-                    <option value="9">September</option>
-                    <option value="10">Oktober</option>
-                    <option value="11">November</option>
-                    <option value="12">Desember</option>
-                </select>
-                <select id="selectYear" onchange="changeMonth()" 
-                        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
-                    @for($y = now()->year - 2; $y <= now()->year + 2; $y++)
-                        <option value="{{ $y }}" {{ $y == now()->year ? 'selected' : '' }}>{{ $y }}</option>
-                    @endfor
-                </select>
-            </div>
-            
-            <!-- Toggle Bulanan/Tahunan -->
-            <div class="flex items-center space-x-2">
-                <button id="btnMonthly" onclick="switchView('monthly')" 
-                        class="px-4 py-2 text-sm font-semibold rounded-lg transition bg-black text-white">
-                    Bulanan
-                </button>
-                <button id="btnYearly" onclick="switchView('yearly')" 
-                        class="px-4 py-2 text-sm font-semibold rounded-lg transition bg-gray-200 text-gray-700 hover:bg-gray-300">
-                    Tahunan
-                </button>
-            </div>
-        </div>
-    </div>
-
-    @php
-        $dicairkan = $programKerjas->filter(fn($p) => $p->status === 'dicairkan');
-        $currentMonth = now()->month;
-        $currentYear = now()->year;
-    @endphp
-
-    <!-- VIEW BULANAN -->
-    <!-- VIEW BULANAN -->
-    <div id="monthlyView">
-        @php
-            $bulanIndo = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-        @endphp
-        <p id="monthLabel" class="text-sm text-gray-600 mb-3">📅 {{ $bulanIndo[now()->month] }} {{ now()->year }}</p>
-        
-        <!-- Container untuk grid yang akan di-update -->
-        <div id="monthlyGridContainer">
-            @php
-                $daysInMonth = now()->daysInMonth;
-            @endphp
-            
-            <!-- Header Kalender Bulanan -->
-            <div class="grid gap-1" id="monthlyHeader" style="grid-template-columns: repeat({{ $daysInMonth }}, 1fr);">
-                @for($d=1; $d <= $daysInMonth; $d++)
-                    <div class="text-xs text-center text-gray-500 font-semibold p-2 bg-gray-50 rounded">{{ $d }}</div>
-                @endfor
-            </div>
-                    
-            <!-- Body Gantt Bulanan -->
-            <div class="mt-2 grid gap-1" id="monthlyBody" style="grid-template-columns: repeat({{ $daysInMonth }}, 1fr);">
-                @php
-                    $monthlyData = [];
-                    foreach($dicairkan as $pk) {
-                        $tanggal = \Carbon\Carbon::parse($pk->tanggal);
-                        if ($tanggal->month == $currentMonth && $tanggal->year == $currentYear) {
-                            $day = $tanggal->day;
-                            if (!isset($monthlyData[$day])) {
-                                $monthlyData[$day] = [];
-                            }
-                            $monthlyData[$day][] = $pk;
-                        }
-                    }
-                @endphp
-                
-                @for($d = 1; $d <= $daysInMonth; $d++)
-                    <div class="min-h-[60px] bg-gray-50 rounded p-1 space-y-1">
-                        @if(isset($monthlyData[$d]))
-                            @foreach($monthlyData[$d] as $program)
-                                <div class="group relative">
-                                    <div onclick="scrollToProgram({{ $program->id }})" class="bg-green-500 hover:bg-green-600 rounded h-6 cursor-pointer transition-all duration-200 transform hover:scale-105">
-                                    </div>
-                                    
-                                    <!-- Tooltip on Hover -->
-                                    <div class="tooltip-monthly absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 hidden group-hover:block w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 pointer-events-none">
-                                        <div class="font-bold mb-1">{{ $program->nama }}</div>
-                                        <div class="text-gray-300">📁 Bidang: {{ $program->bidang->nama }}</div>
-                                        <div class="text-gray-300">💰 Anggaran: Rp {{ number_format($program->anggaran, 0, ',', '.') }}</div>
-                                        <div class="text-gray-300">📅 Tanggal: {{ \Carbon\Carbon::parse($program->tanggal)->format('d M Y') }}</div>
-                                        <div class="text-gray-400 text-[10px] mt-2 italic">💡 Klik untuk lihat detail</div>
-                                        <!-- Arrow -->
-                                        <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @endif
-                    </div>
-                @endfor
-            </div>
-
-            @if(count($monthlyData) == 0)
-                <p class="text-sm text-gray-500 text-center py-8" id="monthlyEmpty">Tidak ada program yang dilaksanakan bulan ini</p>
-            @endif
-        </div>
-    </div>
-
-    <!-- VIEW TAHUNAN -->
-    <div id="yearlyView" class="hidden">
-        <p class="text-sm text-gray-600 mb-3">📅 Tahun {{ $currentYear }}</p>
-        
-        <!-- Header Kalender Tahunan -->
-        <div class="grid gap-2" style="grid-template-columns: repeat(12, 1fr);">
-            @foreach(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $month)
-                <div class="text-xs text-center text-gray-700 font-bold p-2 bg-gray-50 rounded">{{ $month }}</div>
-            @endforeach
-        </div>
-
-        <!-- Body Gantt Tahunan -->
-        <div class="mt-2 grid gap-2" style="grid-template-columns: repeat(12, 1fr);">
-            @php
-                $yearlyData = [];
-                foreach($dicairkan as $pk) {
-                    $tanggal = \Carbon\Carbon::parse($pk->tanggal);
-                    if ($tanggal->year == $currentYear) {
-                        $month = $tanggal->month;
-                        if (!isset($yearlyData[$month])) {
-                            $yearlyData[$month] = [];
-                        }
-                        $yearlyData[$month][] = $pk;
-                    }
-                }
-            @endphp
-            
-                            @for($m = 1; $m <= 12; $m++)
-                <div class="min-h-[100px] bg-gray-50 rounded p-2 space-y-2">
-                    @if(isset($yearlyData[$m]))
-                        @foreach($yearlyData[$m] as $program)
-                            <div class="group relative">
-                                <div onclick="scrollToProgram({{ $program->id }})" class="bg-green-500 hover:bg-green-600 rounded h-8 cursor-pointer transition-all duration-200 transform hover:scale-105">
-                                </div>
-                                
-                                <!-- Tooltip on Hover -->
-                                <div class="tooltip-yearly absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 hidden group-hover:block w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 pointer-events-none">
-                                    <div class="font-bold mb-1">{{ $program->nama }}</div>
-                                    <div class="text-gray-300">📁 Bidang: {{ $program->bidang->nama }}</div>
-                                    <div class="text-gray-300">💰 Anggaran: Rp {{ number_format($program->anggaran, 0, ',', '.') }}</div>
-                                    <div class="text-gray-300">📅 Tanggal: {{ \Carbon\Carbon::parse($program->tanggal)->format('d M Y') }}</div>
-                                    <div class="text-gray-400 text-[10px] mt-2 italic">💡 Klik untuk lihat detail</div>
-                                    <!-- Arrow -->
-                                    <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
-                                </div>
-                            </div>
-                        @endforeach
-                        
-                        @if(count($yearlyData[$m]) > 1)
-                            <div class="text-[10px] text-gray-500 text-center mt-1">
-                                +{{ count($yearlyData[$m]) }} program
-                            </div>
-                        @endif
-                    @endif
-                </div>
-            @endfor
-        </div>
-
-        @if(count($yearlyData) == 0)
-            <p class="text-sm text-gray-500 text-center py-8">Tidak ada program yang dicairkan tahun ini</p>
-        @endif
-    </div>
-
-</div>
-<!-- ===== END GANTT ===== -->
 
     <!-- Table Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -373,7 +427,11 @@
                 <tbody class="divide-y divide-gray-200" id="programKerjaTableBody">
                     @forelse($programKerjas as $index => $pk)
                         <tr class="hover:bg-gray-50 transition" data-status="{{ $pk->status }}">
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $programKerjas->firstItem() + $index }}</td>
+                            <!-- ✅ GANTI: Tetap pakai $programKerjas untuk nomor urut -->
+                            <td class="px-6 py-4 text-sm text-gray-900">
+                                {{ $programKerjas->firstItem() + $index }}
+                            </td>
+                            
                             @if(in_array($userRole, ['superadmin', 'sekretaris']))
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-s font-medium text-dark">
@@ -381,6 +439,7 @@
                                 </span>
                             </td>
                             @endif
+                            
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">{{ $pk->nama }}</div>
                                 @if($pk->submitted_at)
@@ -389,17 +448,21 @@
                                     </div>
                                 @endif
                             </td>
+                            
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-semibold text-gray-900">
                                     Rp {{ number_format($pk->anggaran, 0, ',', '.') }}
                                 </div>
                             </td>
+                            
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $pk->tahun }}
                             </td>
+                            
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $pk->tanggal ? $pk->tanggal->format('d M Y') : '-' }}
                             </td>
+                            
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
                                     $statusConfig = [
@@ -417,17 +480,18 @@
                                     {{ $config['label'] }}
                                 </span>
                             </td>
-                           <td class="px-6 py-4">
+                            
+                            <td class="px-6 py-4">
                                 <div class="flex items-center justify-center space-x-2">
                                     <!-- Detail Button -->
-                                    <a href="{{ route('program-kerja.show', $pk->id) }}"
-                                    class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
-                                    title="Detail">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                        </svg>
-                                    </a>
+                                    <button onclick="openDetailModal({{ $pk->id }})"
+                                        class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
+                                        title="Detail">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                </button>
 
                                     @if($pk->isDraft() && in_array($userRole, ['admin', 'superadmin']))
                                         <!-- Edit Button -->
@@ -462,7 +526,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ in_array($userRole, ['superadmin', 'sekretaris']) ? '7' : '6' }}" class="px-6 py-16 text-center">
+                            <td colspan="{{ in_array($userRole, ['superadmin', 'sekretaris']) ? '8' : '7' }}" class="px-6 py-16 text-center">
                                 <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
@@ -488,10 +552,11 @@
 @if(in_array($userRole, ['admin', 'superadmin']))
 @include('program-kerja.create')
 @include('program-kerja.edit')
+@include('program-kerja.detail')
 @endif
 
 @endsection
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @push('scripts')
 <script>
     // Filter by Bidang
@@ -824,6 +889,19 @@
     // Data program kerja dari PHP
 const programKerjas = @json($dicairkan->values());
 
+// ✅ TAMBAHKAN: Color map untuk bidang (sama seperti di PHP)
+const colorMap = {
+    'Bidang Organisasi': '#3b82f6',
+    'Bidang Pendidikan': '#6366f1',
+    'Bidang Hubungan Industrial': '#10b981',
+    'Bidang Sosial Ekonomi': '#f59e0b',
+    'Bidang Upah dan Bonus': '#ef4444',
+    'Bidang Umum': '#8b5cf6',
+    'Ketua': '#14b8a6',
+    'Bendahara': '#ec4899',
+    'Sekretaris': '#a3e635',
+};
+
 // Set default month & year
 document.addEventListener('DOMContentLoaded', function() {
     const currentMonth = {{ now()->month }};
@@ -875,9 +953,15 @@ function changeMonth() {
                 const formattedDate = tanggal.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
                 const formattedAnggaran = new Intl.NumberFormat('id-ID').format(program.anggaran);
                 
+                // ✅ FIX: Gunakan colorMap berdasarkan bidang
+                const bidangNama = program.bidang.nama;
+                const badgeColor = colorMap[bidangNama] || '#6b7280'; // default gray jika tidak ada
+                
                 bodyHtml += `
                     <div class="group relative">
-                        <div onclick="scrollToProgram(${program.id})" class="bg-green-500 hover:bg-green-600 rounded h-6 cursor-pointer transition-all duration-200 transform hover:scale-105">
+                        <div onclick="scrollToProgram(${program.id})" 
+                             class="rounded h-6 cursor-pointer transition-all duration-200 transform hover:scale-105"
+                             style="background-color: ${badgeColor};">
                         </div>
                         <div class="tooltip-monthly absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 hidden group-hover:block w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 pointer-events-none">
                             <div class="font-bold mb-1">${program.nama}</div>
@@ -1023,5 +1107,86 @@ function scrollToProgram(programId) {
         }
     });
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const ctx = document.getElementById("monthlyBarChart").getContext("2d");
+
+    const chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: @json(array_values($monthNames)),
+            datasets: [
+                {
+                    label: "Planning",
+                    data: @json(array_values($planning)),
+                    backgroundColor: "rgba(150,150,150,0.6)",
+                    borderRadius: 6,
+                },
+                {
+                    label: "Actual (Dicairkan)",
+                    data: @json(array_values($actual)),
+                    backgroundColor: "rgba(16,185,129,0.8)",
+                    borderRadius: 6,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        // ✅ Custom tooltip untuk menampilkan jumlah program + total anggaran
+                        label: function(context) {
+                            const datasetLabel = context.dataset.label || '';
+                            const count = context.parsed.y;
+                            const monthIndex = context.dataIndex + 1; // bulan 1-12
+                            
+                            // ✅ Ambil data anggaran dari PHP
+                            const planningBudgets = @json(array_values($planningBudget));
+                            const actualBudgets = @json(array_values($actualBudget));
+                            
+                            let budget = 0;
+                            if (context.datasetIndex === 0) {
+                                // Planning
+                                budget = planningBudgets[context.dataIndex];
+                            } else {
+                                // Actual
+                                budget = actualBudgets[context.dataIndex];
+                            }
+                            
+                            // Format angka dengan pemisah ribuan
+                            const formattedBudget = new Intl.NumberFormat('id-ID').format(budget);
+                            
+                            return [
+                                `${datasetLabel}: ${count} program`,
+                                `Total Anggaran: Rp ${formattedBudget}`
+                            ];
+                        },
+                        title: function(context) {
+                            return `Bulan ${context[0].label}`;
+                        }
+                    },
+                    displayColors: true,
+                    padding: 12,
+                    bodySpacing: 4,
+                    bodyFont: {
+                        size: 13
+                    },
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    }
+                }
+            }
+        }
+    });
+});
+
 </script>
 @endpush

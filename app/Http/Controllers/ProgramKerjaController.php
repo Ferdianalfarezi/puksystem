@@ -21,29 +21,44 @@ class ProgramKerjaController extends Controller
             $bidangs = $allBidangs;
             $selectedBidangId = $request->get('bidang_id', 'all');
             
-            if ($selectedBidangId === 'all') {
-                $programKerjas = ProgramKerja::with(['bidang', 'submittedBy'])
-                    ->latest()
-                    ->paginate(10);
-            } else {
-                $programKerjas = ProgramKerja::with(['bidang', 'submittedBy'])
-                    ->where('bidang_id', $selectedBidangId)
-                    ->latest()
-                    ->paginate(10)
-                    ->appends(['bidang_id' => $selectedBidangId]);
+            $baseQuery = ProgramKerja::with(['bidang', 'submittedBy']);
+            
+            if ($selectedBidangId !== 'all') {
+                $baseQuery->where('bidang_id', $selectedBidangId);
             }
             
-            return view('program-kerja.index', compact('programKerjas', 'bidangs', 'selectedBidangId', 'allBidangs'));
+            $allProgramKerjas = $baseQuery->get();
+            $programKerjas = $baseQuery->latest()->paginate(10);
+            
+            if ($selectedBidangId !== 'all') {
+                $programKerjas->appends(['bidang_id' => $selectedBidangId]);
+            }
+            
+            return view('program-kerja.index', compact(
+                'programKerjas',
+                'allProgramKerjas',
+                'bidangs', 
+                'selectedBidangId', 
+                'allBidangs'
+            ));
+            
         } else {
-            $programKerjas = ProgramKerja::with(['bidang', 'submittedBy'])
-                ->forBidang($user->bidang_id)
-                ->latest()
-                ->paginate(10);
+            $baseQuery = ProgramKerja::with(['bidang', 'submittedBy'])
+                ->forBidang($user->bidang_id);
+            
+            $allProgramKerjas = $baseQuery->get();
+            $programKerjas = $baseQuery->latest()->paginate(10);
             
             $bidangs = collect();
             $selectedBidangId = null;
             
-            return view('program-kerja.index', compact('programKerjas', 'bidangs', 'selectedBidangId', 'allBidangs'));
+            return view('program-kerja.index', compact(
+                'programKerjas',
+                'allProgramKerjas',
+                'bidangs', 
+                'selectedBidangId', 
+                'allBidangs'
+            ));
         }
     }
 
@@ -114,6 +129,7 @@ class ProgramKerjaController extends Controller
         $user = Auth::user();
         $userRole = $user->role->nama ?? '';
         
+        // Authorization check
         if (!in_array($userRole, ['superadmin', 'sekretaris'])) {
             if ($programKerja->bidang_id !== $user->bidang_id) {
                 if (request()->ajax()) {
@@ -126,18 +142,82 @@ class ProgramKerjaController extends Controller
             }
         }
 
+        // Load all relationships
+        $programKerja->load([
+            'bidang', 
+            'submittedBy', 
+            'reviewedByBendahara', 
+            'reviewedByKetua', 
+            'pencairan.dicairkanOleh'
+        ]);
+
+        // If AJAX request (for modal)
         if (request()->ajax()) {
-            $data = $programKerja->toArray();
-            $data['bidang'] = $programKerja->bidang;
-            
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => [
+                    'id' => $programKerja->id,
+                    'nama' => $programKerja->nama,
+                    'anggaran' => $programKerja->anggaran,
+                    'tahun' => $programKerja->tahun,
+                    'tanggal' => $programKerja->tanggal,
+                    'tanggal_formatted' => $programKerja->tanggal ? $programKerja->tanggal->format('d M Y') : '-',
+                    'status' => $programKerja->status,
+                    'is_draft' => $programKerja->isDraft(),
+                    
+                    // Bidang
+                    'bidang' => [
+                        'id' => $programKerja->bidang->id,
+                        'nama' => $programKerja->bidang->nama,
+                    ],
+                    'bidang_id' => $programKerja->bidang_id,
+                    
+                    // Submission info
+                    'submitted_at' => $programKerja->submitted_at,
+                    'submitted_at_formatted' => $programKerja->submitted_at 
+                        ? $programKerja->submitted_at->format('d M Y, H:i') . ' WIB' 
+                        : null,
+                    'submitted_by_name' => $programKerja->submittedBy?->name,
+                    
+                    // Bendahara review
+                    'reviewed_at_bendahara' => $programKerja->reviewed_at_bendahara,
+                    'reviewed_at_bendahara_formatted' => $programKerja->reviewed_at_bendahara 
+                        ? $programKerja->reviewed_at_bendahara->format('d M Y, H:i') . ' WIB' 
+                        : null,
+                    'reviewed_by_bendahara_name' => $programKerja->reviewedByBendahara?->name,
+                    'catatan_bendahara' => $programKerja->catatan_bendahara,
+                    
+                    // Ketua review
+                    'reviewed_at_ketua' => $programKerja->reviewed_at_ketua,
+                    'reviewed_at_ketua_formatted' => $programKerja->reviewed_at_ketua 
+                        ? $programKerja->reviewed_at_ketua->format('d M Y, H:i') . ' WIB' 
+                        : null,
+                    'reviewed_by_ketua_name' => $programKerja->reviewedByKetua?->name,
+                    'catatan_ketua' => $programKerja->catatan_ketua,
+                    
+                    // Timestamps
+                    'created_at_formatted' => $programKerja->created_at->format('d M Y, H:i') . ' WIB',
+                    'updated_at_formatted' => $programKerja->updated_at->format('d M Y, H:i') . ' WIB',
+                    
+                    // Pencairan info
+                    'pencairan' => $programKerja->pencairan ? [
+                        'jumlah_dicairkan' => $programKerja->pencairan->jumlah_dicairkan,
+                        'tanggal_pencairan' => $programKerja->pencairan->tanggal_pencairan,
+                        'tanggal_pencairan_formatted' => $programKerja->pencairan->tanggal_pencairan 
+                            ? $programKerja->pencairan->tanggal_pencairan->format('d M Y, H:i') . ' WIB' 
+                            : '-',
+                        'metode_pencairan' => $programKerja->pencairan->metode_pencairan,
+                        'metode_pencairan_label' => $programKerja->pencairan->metode_pencairan_label ?? ucfirst(str_replace('_', ' ', $programKerja->pencairan->metode_pencairan)),
+                        'nomor_referensi' => $programKerja->pencairan->nomor_referensi,
+                        'dicairkan_oleh_name' => $programKerja->pencairan->dicairkanOleh?->name,
+                        'catatan' => $programKerja->pencairan->catatan,
+                    ] : null,
+                ]
             ]);
         }
 
-        $programKerja->load(['bidang', 'submittedBy', 'reviewedByBendahara', 'reviewedByKetua', 'pencairan', 'histories']);
-        
+        // If not AJAX (for direct page view)
+        $programKerja->load(['histories']);
         $allBidangs = \App\Models\Bidang::orderBy('nama')->get();
         
         return view('program-kerja.detail', compact('programKerja', 'allBidangs'));

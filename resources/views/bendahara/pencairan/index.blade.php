@@ -9,7 +9,7 @@
     <div class="space-y-4">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Pencairan Dana Program Kerja</h1>
+                <h1 class="text-3xl font-bold text-gray-900">Pencairan Dana</h1>
                 <p class="text-gray-600 mt-1">Kelola pencairan dana untuk program kerja yang telah disetujui</p>
             </div>
         </div>
@@ -180,7 +180,7 @@
 </div>
 
 <!-- Cairkan Modal -->
-@include('pencairan.cairkan-modal')
+@include('bendahara.pencairan.cairkan-modal')
 
 @endsection
 

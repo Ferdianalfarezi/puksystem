@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('kas')->name('kas.')->group(function () {
         Route::get('/', [App\Http\Controllers\KasController::class, 'index'])->name('index');
+        Route::get('/export', [App\Http\Controllers\KasController::class, 'export'])->name('export');
         Route::post('/setor', [App\Http\Controllers\KasController::class, 'setor'])->name('setor');
     });
     

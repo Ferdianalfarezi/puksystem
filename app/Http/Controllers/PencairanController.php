@@ -22,14 +22,14 @@ class PencairanController extends Controller
         // Ambil saldo kas untuk ditampilkan di view
         $kasGlobal = Kas::getGlobal();
 
-        return view('pencairan.index', compact('programKerjas', 'kasGlobal'));
+        return view('bendahara.pencairan.index', compact('programKerjas', 'kasGlobal'));
     }
 
     public function show(ProgramKerja $programKerja)
     {
         $programKerja->load(['bidang', 'submittedBy', 'reviewedByBendahara', 'reviewedByKetua', 'pencairan']);
 
-        return view('pencairan.detail', compact('programKerja'));
+        return view('bendahara.pencairan.detail', compact('programKerja'));
     }
 
     public function cairkan(Request $request, ProgramKerja $programKerja)

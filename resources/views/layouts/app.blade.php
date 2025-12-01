@@ -267,6 +267,12 @@
                 </span>
             </a>
 
+            <!-- Divider -->
+            <div class="py-2">
+                <div class="border-t border-gray-200/60"></div>
+            </div>
+
+
             @if(in_array($userRole, ['superadmin']))
                 <a href="{{ route('users.index') }}" 
                 class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('users.*') ? 'active' : '' }}"
@@ -311,7 +317,7 @@
             <!-- Menu Program Kerja (Standalone - untuk superadmin & admin) -->
             @if(in_array($userRole, ['superadmin', 'admin']))
             <a href="{{ route('program-kerja.index') }}" 
-               class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('program-kerja.*') && !request()->routeIs('bendahara.*') && !request()->routeIs('ketua.*') ? 'active' : '' }}"
+               class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('program-kerja.*') && !request()->routeIs('bendahara.*') && !request()->routeIs('ketua.*') && !request()->routeIs('pencairan.*') ? 'active' : '' }}"
                :title="sidebarCollapsed ? 'Program Kerja' : ''">
                 <div class="w-5 h-5 mr-3 flex-shrink-0">
                     <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -324,16 +330,22 @@
             </a>
             @endif
 
+            <!-- Divider -->
+            <div class="py-2">
+                <div class="border-t border-gray-200/60"></div>
+            </div>
+
+
             <!-- Menu Group: Verifikasi -->
             @php
                 $allowedRoles = ['superadmin', 'bendahara', 'sekretaris', 'ketua'];
             @endphp
 
             @if(in_array($userRole, $allowedRoles))
-            <div x-data="{ open: {{ request()->routeIs('bendahara.*') || request()->routeIs('ketua.*') ? 'true' : 'false' }} }">
+            <div x-data="{ open: {{ request()->routeIs('bendahara.*') || request()->routeIs('ketua.*') || request()->routeIs('pencairan.*') ? 'true' : 'false' }} }">
                 <!-- Parent Menu -->
                 <button @click="open = !open" 
-                        class="menu-item w-full flex items-center justify-between px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('bendahara.*') || request()->routeIs('ketua.*') ? 'active' : '' }}"
+                        class="menu-item w-full flex items-center justify-between px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('bendahara.*') || request()->routeIs('ketua.*') || request()->routeIs('pencairan.*') ? 'active' : '' }}"
                         :title="sidebarCollapsed ? 'Verifikasi' : ''">
                     <div class="flex items-center flex-1">
                         <div class="w-5 h-5 mr-3 flex-shrink-0">
@@ -371,6 +383,15 @@
                             </svg>
                             <span>Program Kerja</span>
                         </a>
+
+                        <!-- Submenu Pencairan untuk Bendahara -->
+                        <a href="{{ route('pencairan.index') }}" 
+                           class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('pencairan.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Pencairan Dana</span>
+                        </a>
                     @endif
 
                     @if($userRole === 'ketua')
@@ -389,7 +410,7 @@
                         <!-- Group Verifikasi -->
                         <div class="mt-2">
                             <!-- Parent Bendahara -->
-                            <div x-data="{ open: {{ request()->routeIs('bendahara.*') ? 'true' : 'false' }} }">
+                            <div x-data="{ open: {{ request()->routeIs('bendahara.*') || request()->routeIs('pencairan.*') ? 'true' : 'false' }} }">
 
                                 <!-- Tombol Parent -->
                                 <button @click="open = !open"
@@ -420,6 +441,13 @@
                                             hover:bg-gray-100 text-gray-600 transition
                                             {{ request()->routeIs('bendahara.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
                                         Program Kerja
+                                    </a>
+
+                                    <a href="{{ route('pencairan.index') }}"
+                                    class="flex items-center px-3 py-2 text-sm rounded-lg
+                                            hover:bg-gray-100 text-gray-600 transition
+                                            {{ request()->routeIs('pencairan.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                                        Pencairan
                                     </a>
 
                                 </div>
@@ -479,28 +507,12 @@
             </div>
             @endif
 
-            <!-- Menu Pencairan (untuk Bendahara & Superadmin) -->
-            @if(in_array($userRole, ['bendahara', 'superadmin']))
-            <a href="{{ route('pencairan.index') }}" 
-            class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('pencairan.*') ? 'active' : '' }}"
-            :title="sidebarCollapsed ? 'Pencairan Dana' : ''">
-                <div class="w-5 h-5 mr-3 flex-shrink-0">
-                    <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <span class="sidebar-text font-medium" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
-                    Pencairan Dana
-                </span>
-            </a>
-            @endif
-
             <!-- Menu History (Dropdown untuk Semua Role termasuk admin bidang) -->
             @if(in_array($userRole, ['superadmin', 'bendahara', 'sekretaris', 'ketua', 'admin']))
-            <div x-data="{ open: {{ request()->routeIs('history.*') ? 'true' : 'false' }} }">
+            <div x-data="{ open: {{ request()->routeIs('history.*') || request()->routeIs('kas.*') ? 'true' : 'false' }} }">
                 <!-- Parent Menu - History -->
                 <button @click="open = !open" 
-                        class="menu-item flex items-center justify-between w-full px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('history.*') ? 'active' : '' }}"
+                        class="menu-item flex items-center justify-between w-full px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('history.*') || request()->routeIs('kas.*') ? 'active' : '' }}"
                         :title="sidebarCollapsed ? 'History' : ''">
                     <div class="flex items-center flex-1">
                         <div class="w-5 h-5 mr-3 flex-shrink-0">
