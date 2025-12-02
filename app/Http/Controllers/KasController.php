@@ -68,6 +68,56 @@ class KasController extends Controller
         ? $lastTransaction->saldo_sesudah
         : $kasGlobal->saldo;
 
+    // === 📊 CHART DATA: Pengeluaran per Bidang ===
+    $pengeluaranPerBidang = HistoryKas::query()
+        ->where('kas_id', $kasGlobal->id)
+        ->where('jenis', 'keluar')
+        ->when($year, fn($q) => $q->whereYear('tanggal_transaksi', $year))
+        ->when($month, fn($q) => $q->whereMonth('tanggal_transaksi', $month))
+        ->get()
+        ->filter(function ($history) {
+            // Filter hanya yang punya referable
+            return $history->referable_type && $history->referable;
+        })
+        ->groupBy(function ($history) {
+            // Group berdasarkan bidang
+            if ($history->referable_type === 'App\Models\Pencairan') {
+                return $history->referable->programKerja->bidang->nama ?? 'Tidak Ada Bidang';
+            } elseif ($history->referable_type === 'App\Models\PencairanBudget') {
+                return $history->referable->pengajuanBudget->bidang->nama ?? 'Tidak Ada Bidang';
+            }
+            return 'Manual/Lainnya';
+        })
+        ->map(function ($items) {
+            return $items->sum('jumlah');
+        })
+        ->sortDesc()
+        ->take(10); // Ambil 10 bidang teratas
+
+    // === 📊 CHART DATA: Pengeluaran per Jenis Pengeluaran ===
+    $pengeluaranPerJenis = HistoryKas::query()
+        ->where('kas_id', $kasGlobal->id)
+        ->where('jenis', 'keluar')
+        ->when($year, fn($q) => $q->whereYear('tanggal_transaksi', $year))
+        ->when($month, fn($q) => $q->whereMonth('tanggal_transaksi', $month))
+        ->get()
+        ->filter(function ($history) {
+            return $history->referable_type && $history->referable;
+        })
+        ->groupBy(function ($history) {
+            // Group berdasarkan jenis pengeluaran
+            if ($history->referable_type === 'App\Models\Pencairan') {
+                return $history->referable->programKerja->jenis_pengeluaran ?? 'Lainnya';
+            } elseif ($history->referable_type === 'App\Models\PencairanBudget') {
+                return $history->referable->pengajuanBudget->jenis_pengeluaran ?? 'Lainnya';
+            }
+            return 'Manual/Lainnya';
+        })
+        ->map(function ($items) {
+            return $items->sum('jumlah');
+        })
+        ->sortDesc();
+
     // === LIST TAHUN ===
     $availableYears = HistoryKas::where('kas_id', $kasGlobal->id)
         ->selectRaw('YEAR(tanggal_transaksi) AS year')
@@ -97,7 +147,9 @@ class KasController extends Controller
         'year',
         'month',
         'availableYears',
-        'months'
+        'months',
+        'pengeluaranPerBidang',
+        'pengeluaranPerJenis'
     ));
 }
 

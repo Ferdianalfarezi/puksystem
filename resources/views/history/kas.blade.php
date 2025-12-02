@@ -114,6 +114,129 @@
         </div>
     </div>
 
+    <!-- 📊 Charts Section dengan Single Toggle Button -->
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-900">Analisis Pengeluaran</h2>
+        <button onclick="toggleAllCharts()" 
+                class="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition text-gray-700 font-medium">
+            <svg id="toggleIcon" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+            <span id="toggleText">Sembunyikan Chart</span>
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Chart 1: Pengeluaran per Bidang -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden chart-card">
+            <!-- Header -->
+            <div class="px-6 py-4 ">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-indigo-600 rounded-lg p-2">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Pengeluaran per Bidang</h3>
+                        <p class="text-sm text-gray-600">
+                            @if($year && $month)
+                                {{ $months[$month] }} {{ $year }}
+                            @elseif($year)
+                                Tahun {{ $year }}
+                            @else
+                                Semua Periode
+                            @endif
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chart Content -->
+            <div class="chart-content transition-all duration-300 ease-in-out overflow-hidden">
+                <div class="px-6 py-6">
+                    @if($pengeluaranPerBidang->count() > 0)
+                        <div class="relative" style="height: 300px;">
+                            <canvas id="chartBidang"></canvas>
+                        </div>
+                        
+                        <!-- Legend/Summary -->
+                        <div class="mt-6 space-y-2">
+                            @foreach($pengeluaranPerBidang->take(5) as $bidang => $total)
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">{{ $bidang }}</span>
+                                <span class="font-semibold text-gray-900">Rp {{ number_format($total, 0, ',', '.') }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="flex flex-col items-center justify-center py-12">
+                            <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            <p class="text-gray-500 font-medium">Belum ada data pengeluaran</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Pengeluaran per Jenis -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden chart-card">
+            <!-- Header -->
+            <div class="px-6 py-4 ">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-purple-600 rounded-lg p-2">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Pengeluaran per Jenis</h3>
+                        <p class="text-sm text-gray-600">
+                            @if($year && $month)
+                                {{ $months[$month] }} {{ $year }}
+                            @elseif($year)
+                                Tahun {{ $year }}
+                            @else
+                                Semua Periode
+                            @endif
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chart Content -->
+            <div class="chart-content transition-all duration-300 ease-in-out overflow-hidden">
+                <div class="px-6 py-6">
+                    @if($pengeluaranPerJenis->count() > 0)
+                        <div class="relative" style="height: 300px;">
+                            <canvas id="chartJenis"></canvas>
+                        </div>
+                        
+                        <!-- Legend/Summary -->
+                        <div class="mt-6 space-y-2">
+                            @foreach($pengeluaranPerJenis->take(5) as $jenis => $total)
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">{{ $jenis }}</span>
+                                <span class="font-semibold text-gray-900">Rp {{ number_format($total, 0, ',', '.') }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="flex flex-col items-center justify-center py-12">
+                            <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                            </svg>
+                            <p class="text-gray-500 font-medium">Belum ada data pengeluaran</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
         <!-- Filter Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
@@ -407,14 +530,14 @@
 @endif
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+// Export Excel Function
 function exportExcel() {
-    // Get current filter parameters
     const urlParams = new URLSearchParams(window.location.search);
     const year = urlParams.get('year') || '';
     const month = urlParams.get('month') || '';
     
-    // Build export URL with filters
     let exportUrl = '{{ route("kas.export") }}';
     const params = new URLSearchParams();
     
@@ -425,8 +548,179 @@ function exportExcel() {
         exportUrl += '?' + params.toString();
     }
     
-    // Download file
     window.location.href = exportUrl;
 }
+
+// Global state untuk track chart visibility
+let chartsExpanded = true;
+
+// Toggle All Charts Function
+function toggleAllCharts() {
+    const chartContents = document.querySelectorAll('.chart-content');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const toggleText = document.getElementById('toggleText');
+    
+    chartsExpanded = !chartsExpanded;
+    
+    chartContents.forEach(content => {
+        if (chartsExpanded) {
+            // Expand
+            content.style.maxHeight = content.scrollHeight + 'px';
+            toggleIcon.style.transform = 'rotate(0deg)';
+            toggleText.textContent = 'Sembunyikan Chart';
+        } else {
+            // Collapse
+            content.style.maxHeight = '0px';
+            toggleIcon.style.transform = 'rotate(-90deg)';
+            toggleText.textContent = 'Tampilkan Chart';
+        }
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const chartContents = document.querySelectorAll('.chart-content');
+    
+    // Set initial expanded state
+    chartContents.forEach(content => {
+        content.style.maxHeight = content.scrollHeight + 'px';
+    });
+});
+
+// Color palette
+const colors = [
+    'rgba(99, 102, 241, 0.8)',   // Indigo
+    'rgba(16, 185, 129, 0.8)',   // Green
+    'rgba(245, 158, 11, 0.8)',   // Orange
+    'rgba(239, 68, 68, 0.8)',    // Red
+    'rgba(168, 85, 247, 0.8)',   // Purple
+    'rgba(59, 130, 246, 0.8)',   // Blue
+    'rgba(236, 72, 153, 0.8)',   // Pink
+    'rgba(14, 165, 233, 0.8)',   // Sky
+    'rgba(34, 197, 94, 0.8)',    // Emerald
+    'rgba(251, 146, 60, 0.8)',   // Orange
+];
+
+// Chart 1: Pengeluaran per Bidang
+@if($pengeluaranPerBidang->count() > 0)
+const ctxBidang = document.getElementById('chartBidang');
+if (ctxBidang) {
+    new Chart(ctxBidang, {
+        type: 'pie',
+        data: {
+            labels: {!! json_encode($pengeluaranPerBidang->keys()) !!},
+            datasets: [{
+                data: {!! json_encode($pengeluaranPerBidang->values()) !!},
+                backgroundColor: colors,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 11
+                        },
+                        generateLabels: function(chart) {
+                            const data = chart.data;
+                            if (data.labels.length && data.datasets.length) {
+                                return data.labels.map((label, i) => {
+                                    const value = data.datasets[0].data[i];
+                                    const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return {
+                                        text: `${label} (${percentage}%)`,
+                                        fillStyle: data.datasets[0].backgroundColor[i],
+                                        hidden: false,
+                                        index: i
+                                    };
+                                });
+                            }
+                            return [];
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `Rp ${value.toLocaleString('id-ID')} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+@endif
+
+// Chart 2: Pengeluaran per Jenis
+@if($pengeluaranPerJenis->count() > 0)
+const ctxJenis = document.getElementById('chartJenis');
+if (ctxJenis) {
+    new Chart(ctxJenis, {
+        type: 'pie',
+        data: {
+            labels: {!! json_encode($pengeluaranPerJenis->keys()) !!},
+            datasets: [{
+                data: {!! json_encode($pengeluaranPerJenis->values()) !!},
+                backgroundColor: colors,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 11
+                        },
+                        generateLabels: function(chart) {
+                            const data = chart.data;
+                            if (data.labels.length && data.datasets.length) {
+                                return data.labels.map((label, i) => {
+                                    const value = data.datasets[0].data[i];
+                                    const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return {
+                                        text: `${label} (${percentage}%)`,
+                                        fillStyle: data.datasets[0].backgroundColor[i],
+                                        hidden: false,
+                                        index: i
+                                    };
+                                });
+                            }
+                            return [];
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `Rp ${value.toLocaleString('id-ID')} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+@endif
 </script>
 @endpush
