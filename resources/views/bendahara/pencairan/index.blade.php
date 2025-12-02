@@ -10,18 +10,18 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">Pencairan Dana</h1>
-                <p class="text-gray-600 mt-1">Kelola pencairan dana untuk program kerja yang telah disetujui</p>
+                <p class="text-gray-600 mt-1">Kelola pencairan dana untuk program kerja & pengajuan budget yang telah disetujui</p>
             </div>
         </div>
 
         <!-- Statistics Badges -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <!-- Total Menunggu Pencairan -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Menunggu Pencairan</p>
-                        <p class="text-2xl font-bold text-blue-900 mt-1">{{ $programKerjas->total() }}</p>
+                        <p class="text-2xl font-bold text-blue-900 mt-1">{{ $pencairanPaginated->total() }}</p>
                     </div>
                     <div class="bg-blue-100 p-3 rounded-lg">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,7 +37,7 @@
                     <div>
                         <p class="text-xs font-semibold text-green-600 uppercase tracking-wider">Total Anggaran</p>
                         <p class="text-lg font-bold text-green-900 mt-1">
-                            Rp {{ number_format($programKerjas->sum('anggaran'), 0, ',', '.') }}
+                            Rp {{ number_format($pencairanPaginated->sum('anggaran'), 0, ',', '.') }}
                         </p>
                     </div>
                     <div class="bg-green-100 p-3 rounded-lg">
@@ -48,17 +48,34 @@
                 </div>
             </div>
 
-            <!-- Bidang Terlibat -->
+            <!-- Saldo Kas -->
             <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-semibold text-purple-600 uppercase tracking-wider">Bidang Terlibat</p>
-                        <p class="text-2xl font-bold text-purple-900 mt-1">
-                            {{ $programKerjas->pluck('bidang_id')->unique()->count() }}
+                        <p class="text-xs font-semibold text-purple-600 uppercase tracking-wider">Saldo Kas</p>
+                        <p class="text-lg font-bold text-purple-900 mt-1">
+                            Rp {{ number_format($kasGlobal->saldo, 0, ',', '.') }}
                         </p>
                     </div>
                     <div class="bg-purple-100 p-3 rounded-lg">
                         <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bidang Terlibat -->
+            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-orange-600 uppercase tracking-wider">Bidang Terlibat</p>
+                        <p class="text-2xl font-bold text-orange-900 mt-1">
+                            {{ $pencairanPaginated->pluck('bidang')->unique()->count() }}
+                        </p>
+                    </div>
+                    <div class="bg-orange-100 p-3 rounded-lg">
+                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/>
                         </svg>
                     </div>
@@ -80,7 +97,7 @@
                     type="text" 
                     id="searchInput"
                     class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
-                    placeholder="Cari program kerja..."
+                    placeholder="Cari program/pengajuan..."
                     onkeyup="searchTable()"
                 >
             </div>
@@ -90,12 +107,13 @@
     <!-- Table Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full" id="programKerjaTable">
+            <table class="w-full" id="pencairanTable">
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tipe</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Program</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis Pengeluaran</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggaran</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
@@ -103,28 +121,44 @@
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200" id="programKerjaTableBody">
-                    @forelse($programKerjas as $index => $pk)
+                <tbody class="divide-y divide-gray-200" id="pencairanTableBody">
+                    @forelse($pencairanPaginated as $index => $item)
                         <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $programKerjas->firstItem() + $index }}</td>
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white">
-                                    {{ $pk->bidang->nama }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900">{{ $pk->nama }}</div>
-                                @if($pk->submittedBy)
-                                    <div class="text-xs text-gray-500 mt-1">
-                                        oleh {{ $pk->submittedBy->name }}
-                                    </div>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ $pencairanPaginated->firstItem() + $index }}</td>
+                            
+                            <!-- Tipe -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($item['type'] === 'program_kerja')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        Program Kerja
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                        Pengajuan Budget
+                                    </span>
                                 @endif
                             </td>
-                            <!-- ✅ TAMBAHKAN: Jenis Pengeluaran -->
+                            
+                            <!-- Bidang -->
+                            <td class="px-6 py-4">
+                                <span class="text-sm font-medium text-gray-900">
+                                    {{ $item['bidang'] }}
+                                </span>
+                            </td>
+                            
+                            <!-- Nama -->
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">{{ $item['nama'] }}</div>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    oleh {{ $item['submitted_by'] }}
+                                </div>
+                            </td>
+                            
+                            <!-- Jenis Pengeluaran -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($pk->jenis_pengeluaran)
+                                @if($item['jenis_pengeluaran'])
                                     @php
-                                        $jenisBadgeClass = match($pk->jenis_pengeluaran) {
+                                        $jenisBadgeClass = match($item['jenis_pengeluaran']) {
                                             'Kesekretariatan' => 'bg-blue-100 text-blue-800',
                                             'Perjalanan Dinas' => 'bg-purple-100 text-purple-800',
                                             'Aksi' => 'bg-green-100 text-green-800',
@@ -137,35 +171,43 @@
                                         };
                                     @endphp
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $jenisBadgeClass }}">
-                                        {{ $pk->jenis_pengeluaran }}
+                                        {{ $item['jenis_pengeluaran'] }}
                                     </span>
                                 @else
                                     <span class="text-xs text-gray-400">-</span>
                                 @endif
                             </td>
+                            
+                            <!-- Anggaran -->
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-semibold text-green-600">
-                                    Rp {{ number_format($pk->anggaran, 0, ',', '.') }}
+                                    Rp {{ number_format($item['anggaran'], 0, ',', '.') }}
                                 </div>
                             </td>
+                            
+                            <!-- Tanggal -->
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $pk->tanggal ? $pk->tanggal->format('d M Y') : '-' }}
+                                {{ $item['tanggal'] ? $item['tanggal']->format('d M Y') : '-' }}
                             </td>
+                            
+                            <!-- Disetujui -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($pk->reviewed_at_ketua)
+                                @if($item['reviewed_at_ketua'])
                                     <div class="text-xs text-gray-600">
-                                        {{ $pk->reviewed_at_ketua->format('d M Y') }}
+                                        {{ $item['reviewed_at_ketua']->format('d M Y') }}
                                     </div>
                                     <div class="text-xs text-gray-500">
-                                        {{ $pk->reviewed_at_ketua->format('H:i') }} WIB
+                                        {{ $item['reviewed_at_ketua']->format('H:i') }} WIB
                                     </div>
                                 @else
                                     <span class="text-xs text-gray-400">-</span>
                                 @endif
                             </td>
+                            
+                            <!-- Aksi -->
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <button onclick="openCairkanModal({{ $pk->id }}, '{{ $pk->nama }}', {{ $pk->anggaran }})"
+                                    <button onclick="openCairkanModal('{{ $item['type'] }}', {{ $item['id'] }}, '{{ $item['nama'] }}', {{ $item['anggaran'] }})"
                                             class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-600 transition">
                                         Cairkan
                                     </button>
@@ -174,12 +216,12 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-16 text-center">
+                            <td colspan="9" class="px-6 py-16 text-center">
                                 <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                                <p class="mt-4 text-gray-600 font-semibold">Tidak ada program kerja yang menunggu pencairan</p>
-                                <p class="text-gray-500 text-sm">Semua program kerja sudah dicairkan</p>
+                                <p class="mt-4 text-gray-600 font-semibold">Tidak ada yang menunggu pencairan</p>
+                                <p class="text-gray-500 text-sm">Semua program kerja & pengajuan budget sudah dicairkan</p>
                             </td>
                         </tr>
                     @endforelse
@@ -187,9 +229,9 @@
             </table>
         </div>
 
-        @if($programKerjas->hasPages())
+        @if($pencairanPaginated->hasPages())
             <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
-                {{ $programKerjas->links() }}
+                {{ $pencairanPaginated->links() }}
             </div>
         @endif
     </div>
@@ -204,7 +246,7 @@
 <script>
     function searchTable() {
         const searchInput = document.getElementById('searchInput').value.toLowerCase();
-        const tableBody = document.getElementById('programKerjaTableBody');
+        const tableBody = document.getElementById('pencairanTableBody');
         const rows = tableBody.getElementsByTagName('tr');
 
         for (let i = 0; i < rows.length; i++) {
@@ -223,20 +265,22 @@
         }
     }
 
-    let currentProgramId = null;
-    let currentProgramName = '';
-    let currentProgramAnggaran = 0;
+    let currentType = null;
+    let currentId = null;
+    let currentName = '';
+    let currentAnggaran = 0;
 
-    function openCairkanModal(id, name, anggaran) {
-        currentProgramId = id;
-        currentProgramName = name;
-        currentProgramAnggaran = anggaran;
+    function openCairkanModal(type, id, name, anggaran) {
+        currentType = type;
+        currentId = id;
+        currentName = name;
+        currentAnggaran = anggaran;
         
         document.getElementById('cairkanProgramName').textContent = name;
         document.getElementById('cairkanProgramAnggaran').textContent = 'Rp ' + formatRupiah(anggaran);
         document.getElementById('jumlahDicairkan').value = anggaran;
         document.getElementById('jumlahDicairkan').max = anggaran;
-        document.getElementById('metodePencairan').value = 'transfer';
+        document.getElementById('metodePencairan').value = 'transfer_bank';
         document.getElementById('nomorReferensi').value = '';
         document.getElementById('catatanPencairan').value = '';
         
@@ -260,9 +304,10 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             document.body.style.overflow = '';
-            currentProgramId = null;
-            currentProgramName = '';
-            currentProgramAnggaran = 0;
+            currentType = null;
+            currentId = null;
+            currentName = '';
+            currentAnggaran = 0;
         }, 250);
     }
 
@@ -295,7 +340,7 @@
         const formData = new FormData(this);
 
         try {
-            const response = await fetch(`/pencairan/${currentProgramId}/cairkan`, {
+            const response = await fetch(`/pencairan/${currentType}/${currentId}/cairkan`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
