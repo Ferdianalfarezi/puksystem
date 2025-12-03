@@ -6,6 +6,7 @@ use App\Models\ProgramKerja;
 use App\Models\ProgramKerjaHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\PengajuanHutang;
 
 class HistoryController extends Controller
 {
@@ -164,5 +165,30 @@ class HistoryController extends Controller
         ];
 
         return $labels[$metode] ?? $metode;
+    }
+
+    public function hutang(Request $request)
+    {
+        $perPage = $request->get('perPage', 20);
+        
+        $baseQuery = PengajuanHutang::with(['user', 'bidang', 'pembayaran.dibayarOleh'])
+            ->where('status', 'lunas');
+        
+        if ($perPage === 'all') {
+            $hutangLunas = $baseQuery->latest()->get();
+            $hutangLunas = new \Illuminate\Pagination\LengthAwarePaginator(
+                $hutangLunas,
+                $hutangLunas->count(),
+                $hutangLunas->count(),
+                1,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+        } else {
+            $hutangLunas = $baseQuery->latest()->paginate($perPage);
+        }
+        
+        $hutangLunas->appends(['perPage' => $perPage]);
+        
+        return view('history.hutang', compact('hutangLunas', 'perPage'));
     }
 }

@@ -48,23 +48,29 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'nik' => ['required', 'string', 'max:50', 'unique:users'], // ✅ TAMBAHKAN
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', 'min:5'],
             'role_id' => ['required', 'exists:roles,id'],
             'bidang_id' => ['required', 'exists:bidangs,id'],
+            'departemen' => ['nullable', 'string', 'max:255'], // ✅ TAMBAHKAN
             'status' => ['required', 'in:active,not active']
         ], [
             'password.min' => 'Password minimal harus 5 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak sesuai.',
+            'nik.required' => 'NIK wajib diisi.',
+            'nik.unique' => 'NIK sudah terdaftar.',
         ]);
 
         try {
             User::create([
                 'name' => $validated['name'],
+                'nik' => $validated['nik'], // ✅ TAMBAHKAN
                 'username' => $validated['username'],
                 'password' => Hash::make($validated['password']),
                 'role_id' => $validated['role_id'],
                 'bidang_id' => $validated['bidang_id'],
+                'departemen' => $validated['departemen'] ?? null, // ✅ TAMBAHKAN
                 'status' => $validated['status'],
             ]);
             
@@ -112,13 +118,18 @@ class UserController extends Controller
     {
         $rules = [
             'name' => ['required', 'string', 'max:255'],
+            'nik' => ['required', 'string', 'max:50', 'unique:users,nik,' . $user->id], // ✅ TAMBAHKAN
             'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
             'role_id' => ['required', 'exists:roles,id'],
             'bidang_id' => ['required', 'exists:bidangs,id'],
+            'departemen' => ['nullable', 'string', 'max:255'], // ✅ TAMBAHKAN
             'status' => ['required', 'in:active,not active']
         ];
 
-        $messages = [];
+        $messages = [
+            'nik.required' => 'NIK wajib diisi.',
+            'nik.unique' => 'NIK sudah terdaftar.',
+        ];
 
         // Only validate password if it's provided
         if ($request->filled('password')) {
@@ -132,9 +143,11 @@ class UserController extends Controller
         try {
             $updateData = [
                 'name' => $validated['name'],
+                'nik' => $validated['nik'], // ✅ TAMBAHKAN
                 'username' => $validated['username'],
                 'role_id' => $validated['role_id'],
                 'bidang_id' => $validated['bidang_id'],
+                'departemen' => $validated['departemen'] ?? null, // ✅ TAMBAHKAN
                 'status' => $validated['status'],
             ];
 

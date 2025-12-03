@@ -18,16 +18,32 @@
             <div class="grid grid-cols-2 gap-4">
                 <!-- Name -->
                 <div class="col-span-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Full Name <span class="text-red-500">*</span>
+                    </label>
                     <input type="text" id="createName" name="name" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
                         placeholder="Enter full name">
                     <span class="text-red-500 text-sm error-message" id="error-create-name"></span>
                 </div>
 
+                <!-- ✅ NIK -->
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        NIK <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="createNik" name="nik" required
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
+                        placeholder="Enter NIK">
+                    <p class="text-xs text-gray-500 mt-1">NIK akan digunakan untuk QR Code kehadiran</p>
+                    <span class="text-red-500 text-sm error-message" id="error-create-nik"></span>
+                </div>
+
                 <!-- Username -->
                 <div class="col-span-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Username <span class="text-red-500">*</span>
+                    </label>
                     <input type="text" id="createUsername" name="username" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
                         placeholder="Enter username">
@@ -36,7 +52,9 @@
 
                 <!-- Role -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Role <span class="text-red-500">*</span>
+                    </label>
                     <select id="createRoleId" name="role_id" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
                         <option value="">Select Role</option>
@@ -49,7 +67,9 @@
 
                 <!-- Bidang -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Bidang</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Bidang <span class="text-red-500">*</span>
+                    </label>
                     <select id="createBidangId" name="bidang_id" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
                         <option value="">Select Bidang</option>
@@ -60,9 +80,22 @@
                     <span class="text-red-500 text-sm error-message" id="error-create-bidang_id"></span>
                 </div>
 
+                <!-- ✅ Departemen -->
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Departemen <span class="text-gray-400 text-xs">(Optional)</span>
+                    </label>
+                    <input type="text" id="createDepartemen" name="departemen"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
+                        placeholder="Enter departemen">
+                    <span class="text-red-500 text-sm error-message" id="error-create-departemen"></span>
+                </div>
+
                 <!-- Password -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Password <span class="text-red-500">*</span>
+                    </label>
                     <input type="password" id="createPassword" name="password" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
                         placeholder="Enter password">
@@ -71,7 +104,9 @@
 
                 <!-- Confirm Password -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Confirm Password <span class="text-red-500">*</span>
+                    </label>
                     <input type="password" id="createPasswordConfirmation" name="password_confirmation" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
                         placeholder="Confirm password">
@@ -80,7 +115,9 @@
 
                 <!-- Status -->
                 <div class="col-span-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Status <span class="text-red-500">*</span>
+                    </label>
                     <select id="createStatus" name="status" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
                         <option value="active">Active</option>
@@ -103,4 +140,4 @@
             </div>
         </form>
     </div>
-</div>      
+</div>

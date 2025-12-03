@@ -390,36 +390,43 @@
                         </td>
 
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $tipeLabel = 'Manual';
-                                $tipeBadgeClass = 'bg-gray-100 text-gray-800';
+                                @php
+                                    $tipeLabel = 'Manual';
+                                    $tipeBadgeClass = 'bg-gray-100 text-gray-800';
+                                    
+                                    if ($history->referable_type === 'App\\Models\\Pencairan') {
+                                        $tipeLabel = 'Program Kerja';
+                                        $tipeBadgeClass = 'bg-indigo-100 text-indigo-800';
+                                    } elseif ($history->referable_type === 'App\\Models\\PencairanBudget') {
+                                        $tipeLabel = 'Pengajuan Budget';
+                                        $tipeBadgeClass = 'bg-emerald-100 text-emerald-800';
+                                    } elseif ($history->referable_type === 'App\\Models\\PembayaranHutang') {
+                                        $tipeLabel = 'Hutang';
+                                        $tipeBadgeClass = 'bg-green-100 text-green-800';
+                                    }
+                                @endphp
                                 
-                                if ($history->referable_type === 'App\\Models\\Pencairan') {
-                                    $tipeLabel = 'Program Kerja';
-                                    $tipeBadgeClass = 'bg-indigo-100 text-indigo-800';
-                                } elseif ($history->referable_type === 'App\\Models\\PencairanBudget') {
-                                    $tipeLabel = 'Pengajuan Budget';
-                                    $tipeBadgeClass = 'bg-emerald-100 text-emerald-800';
-                                }
-                            @endphp
-                            
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $tipeBadgeClass }}">
-                                @if($tipeLabel === 'Program Kerja')
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                    </svg>
-                                @elseif($tipeLabel === 'Pengajuan Budget')
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                @else
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                    </svg>
-                                @endif
-                                {{ $tipeLabel }}
-                            </span>
-                        </td>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $tipeBadgeClass }}">
+                                    @if($tipeLabel === 'Program Kerja')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                        </svg>
+                                    @elseif($tipeLabel === 'Pengajuan Budget')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    @elseif($tipeLabel === 'Pembayaran Hutang')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    @else
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                        </svg>
+                                    @endif
+                                    {{ $tipeLabel }}
+                                </span>
+                            </td>
 
                         <!-- Keterangan -->
                         <td class="px-6 py-4">

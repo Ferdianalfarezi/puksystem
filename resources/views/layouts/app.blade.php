@@ -18,6 +18,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
         
@@ -319,7 +320,7 @@
                 <div class="border-t border-gray-200/60"></div>
             </div>
 
-            <!-- ✅ TAMBAHKAN: Menu Program Kerja (Standalone - untuk superadmin & admin) -->
+            <!-- Menu Program Kerja (Standalone - untuk superadmin & admin) -->
             @if(in_array($userRole, ['superadmin', 'admin']))
             <a href="{{ route('program-kerja.index') }}" 
                class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('program-kerja.*') && !request()->routeIs('bendahara.*') && !request()->routeIs('ketua.*') && !request()->routeIs('pencairan.*') ? 'active' : '' }}"
@@ -334,7 +335,7 @@
                 </span>
             </a>
 
-            <!-- ✅ TAMBAHKAN: Menu Pengajuan Budget (Standalone - untuk superadmin & admin) -->
+            <!-- Menu Pengajuan Budget (Standalone - untuk superadmin & admin) -->
             <a href="{{ route('pengajuan-budget.index') }}" 
                class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('pengajuan-budget.*') && !request()->routeIs('bendahara.pengajuan.*') && !request()->routeIs('ketua.pengajuan.*') ? 'active' : '' }}"
                :title="sidebarCollapsed ? 'Pengajuan Budget' : ''">
@@ -347,6 +348,75 @@
                     Pengajuan Budget
                 </span>
             </a>
+
+            <!-- ✅ UBAH: Menu Hutang (Dropdown Group - untuk superadmin, admin bidang 4, bendahara) -->
+            @php
+                $isBidang4 = auth()->user()->bidang_id == 4;
+                $canAccessHutang = $userRole === 'superadmin' || $userRole === 'bendahara' || ($userRole === 'admin' && $isBidang4);
+            @endphp
+            
+            @if($canAccessHutang)
+            <div x-data="{ open: {{ request()->routeIs('pengajuan-hutang.*') || request()->routeIs('list-hutang') ? 'true' : 'false' }} }">
+                <!-- Parent Menu - Hutang -->
+                <button @click="open = !open" 
+                        class="menu-item w-full flex items-center justify-between px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('pengajuan-hutang.*') || request()->routeIs('list-hutang') ? 'active' : '' }}"
+                        :title="sidebarCollapsed ? 'Hutang' : ''">
+                    <div class="flex items-center flex-1">
+                        <div class="w-5 h-5 mr-3 flex-shrink-0">
+                            <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <span class="sidebar-text font-medium" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
+                            Hutang
+                        </span>
+                    </div>
+                    <!-- Dropdown Arrow -->
+                    <svg class="w-4 h-4 transition-transform duration-200 sidebar-text" 
+                        :class="[
+                            sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100',
+                            open ? 'transform rotate-180' : ''
+                        ]" 
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                <!-- Submenu Dropdown -->
+                <div x-show="open" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="ml-8 mt-1 space-y-1 sidebar-text"
+                    :class="sidebarCollapsed ? 'hidden' : ''">
+                    
+                    <!-- Submenu: Pengajuan Hutang (untuk superadmin & admin bidang 4) -->
+                    @if($userRole === 'superadmin' || ($userRole === 'admin' && $isBidang4))
+                    <a href="{{ route('pengajuan-hutang.index') }}" 
+                       class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('pengajuan-hutang.*') && !request()->routeIs('bendahara.hutang.*') && !request()->routeIs('ketua.hutang.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span>Pengajuan Hutang</span>
+                    </a>
+                    @endif
+
+                    <!-- Submenu: Hutang Aktif (untuk superadmin & bendahara) -->
+                    @if($userRole === 'superadmin' || $userRole === 'bendahara')
+                    <a href="{{ route('list-hutang') }}" 
+                       class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('list-hutang') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                        </svg>
+                        <span>Hutang Aktif</span>
+                    </a>
+                    @endif
+                </div>
+            </div>
+            @endif
             @endif
 
             <!-- Divider -->
@@ -401,20 +471,29 @@
                     @if($userRole === 'bendahara')
                         <!-- Submenu untuk Bendahara - Program Kerja -->
                         <a href="{{ route('bendahara.index') }}" 
-                           class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('bendahara.index') || request()->routeIs('bendahara.show') || (request()->routeIs('bendahara.*') && !request()->routeIs('bendahara.pengajuan.*')) ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                           class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('bendahara.index') || request()->routeIs('bendahara.show') || (request()->routeIs('bendahara.*') && !request()->routeIs('bendahara.pengajuan.*') && !request()->routeIs('bendahara.hutang.*')) ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <span>Program Kerja</span>
                         </a>
 
-                        <!-- ✅ TAMBAHKAN: Submenu untuk Bendahara - Pengajuan Budget -->
+                        <!-- Submenu untuk Bendahara - Pengajuan Budget -->
                         <a href="{{ route('bendahara.pengajuan.index') }}" 
                            class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('bendahara.pengajuan.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <span>Pengajuan Budget</span>
+                        </a>
+
+                        <!-- Submenu Bendahara - Pengajuan Hutang -->
+                        <a href="{{ route('bendahara.hutang.index') }}" 
+                           class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('bendahara.hutang.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            <span>Pengajuan Hutang</span>
                         </a>
 
                         <!-- Submenu Pencairan untuk Bendahara -->
@@ -430,20 +509,29 @@
                     @if($userRole === 'ketua')
                         <!-- Submenu untuk Ketua - Program Kerja -->
                         <a href="{{ route('ketua.index') }}" 
-                           class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('ketua.index') || request()->routeIs('ketua.show') || (request()->routeIs('ketua.*') && !request()->routeIs('ketua.pengajuan.*')) ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                           class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('ketua.index') || request()->routeIs('ketua.show') || (request()->routeIs('ketua.*') && !request()->routeIs('ketua.pengajuan.*') && !request()->routeIs('ketua.hutang.*')) ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
                             </svg>
                             <span>Program Kerja</span>
                         </a>
 
-                        <!-- ✅ TAMBAHKAN: Submenu untuk Ketua - Pengajuan Budget -->
+                        <!-- Submenu untuk Ketua - Pengajuan Budget -->
                         <a href="{{ route('ketua.pengajuan.index') }}" 
                            class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('ketua.pengajuan.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <span>Pengajuan Budget</span>
+                        </a>
+
+                        <!-- Submenu Ketua - Pengajuan Hutang -->
+                        <a href="{{ route('ketua.hutang.index') }}" 
+                           class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('ketua.hutang.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            <span>Pengajuan Hutang</span>
                         </a>
                     @endif
 
@@ -481,16 +569,22 @@
                                     <a href="{{ route('bendahara.index') }}"
                                     class="flex items-center px-3 py-2 text-sm rounded-lg
                                             hover:bg-gray-100 text-gray-600 transition
-                                            {{ request()->routeIs('bendahara.index') || request()->routeIs('bendahara.show') || (request()->routeIs('bendahara.*') && !request()->routeIs('bendahara.pengajuan.*')) ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                                            {{ request()->routeIs('bendahara.index') || request()->routeIs('bendahara.show') || (request()->routeIs('bendahara.*') && !request()->routeIs('bendahara.pengajuan.*') && !request()->routeIs('bendahara.hutang.*')) ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
                                         Program Kerja
                                     </a>
 
-                                    <!-- ✅ TAMBAHKAN: Pengajuan Budget -->
                                     <a href="{{ route('bendahara.pengajuan.index') }}"
                                     class="flex items-center px-3 py-2 text-sm rounded-lg
                                             hover:bg-gray-100 text-gray-600 transition
                                             {{ request()->routeIs('bendahara.pengajuan.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
                                         Pengajuan Budget
+                                    </a>
+
+                                    <a href="{{ route('bendahara.hutang.index') }}"
+                                    class="flex items-center px-3 py-2 text-sm rounded-lg
+                                            hover:bg-gray-100 text-gray-600 transition
+                                            {{ request()->routeIs('bendahara.hutang.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                                        Pengajuan Hutang
                                     </a>
 
                                     <a href="{{ route('pencairan.index') }}"
@@ -533,16 +627,22 @@
                                     <a href="{{ route('ketua.index') }}"
                                     class="flex items-center px-3 py-2 text-sm rounded-lg
                                             hover:bg-gray-100 text-gray-600 transition
-                                            {{ request()->routeIs('ketua.index') || request()->routeIs('ketua.show') || (request()->routeIs('ketua.*') && !request()->routeIs('ketua.pengajuan.*')) ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                                            {{ request()->routeIs('ketua.index') || request()->routeIs('ketua.show') || (request()->routeIs('ketua.*') && !request()->routeIs('ketua.pengajuan.*') && !request()->routeIs('ketua.hutang.*')) ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
                                         Program Kerja
                                     </a>
 
-                                    <!-- ✅ TAMBAHKAN: Pengajuan Budget -->
                                     <a href="{{ route('ketua.pengajuan.index') }}"
                                     class="flex items-center px-3 py-2 text-sm rounded-lg
                                             hover:bg-gray-100 text-gray-600 transition
                                             {{ request()->routeIs('ketua.pengajuan.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
                                         Pengajuan Budget
+                                    </a>
+
+                                    <a href="{{ route('ketua.hutang.index') }}"
+                                    class="flex items-center px-3 py-2 text-sm rounded-lg
+                                            hover:bg-gray-100 text-gray-600 transition
+                                            {{ request()->routeIs('ketua.hutang.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                                        Pengajuan Hutang
                                     </a>
 
                                 </div>
@@ -610,13 +710,22 @@
                         Program Kerja
                     </a>
 
-                    <!-- ✅ TAMBAHKAN: Submenu Pengajuan Budget -->
+                    <!-- Submenu Pengajuan Budget -->
                     <a href="{{ route('history.pengajuan-budget') }}" 
                     class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('history.pengajuan-budget') || request()->routeIs('history.pengajuan-budget.show') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                         Pengajuan Budget
+                    </a>
+
+                    <!-- Submenu Hutang Lunas -->
+                    <a href="{{ route('history.hutang') }}" 
+                    class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('history.hutang') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Hutang Lunas
                     </a>
 
                     <!-- Submenu: Kas -->

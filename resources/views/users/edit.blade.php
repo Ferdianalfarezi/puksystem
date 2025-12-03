@@ -20,16 +20,32 @@
             <div class="grid grid-cols-2 gap-4">
                 <!-- Name -->
                 <div class="col-span-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Full Name <span class="text-red-500">*</span>
+                    </label>
                     <input type="text" id="editName" name="name" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
                         placeholder="Enter full name">
                     <span class="text-red-500 text-sm error-message" id="error-edit-name"></span>
                 </div>
 
+                <!-- ✅ NIK -->
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        NIK <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="editNik" name="nik" required
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
+                        placeholder="Enter NIK">
+                    <p class="text-xs text-gray-500 mt-1">NIK akan digunakan untuk QR Code kehadiran</p>
+                    <span class="text-red-500 text-sm error-message" id="error-edit-nik"></span>
+                </div>
+
                 <!-- Username -->
                 <div class="col-span-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Username <span class="text-red-500">*</span>
+                    </label>
                     <input type="text" id="editUsername" name="username" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
                         placeholder="Enter username">
@@ -38,7 +54,9 @@
 
                 <!-- Role -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Role <span class="text-red-500">*</span>
+                    </label>
                     <select id="editRoleId" name="role_id" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
                         <option value="">Select Role</option>
@@ -51,7 +69,9 @@
 
                 <!-- Bidang -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Bidang</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Bidang <span class="text-red-500">*</span>
+                    </label>
                     <select id="editBidangId" name="bidang_id" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
                         <option value="">Select Bidang</option>
@@ -60,6 +80,17 @@
                         @endforeach
                     </select>
                     <span class="text-red-500 text-sm error-message" id="error-edit-bidang_id"></span>
+                </div>
+
+                <!-- ✅ Departemen -->
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Departemen <span class="text-gray-400 text-xs">(Optional)</span>
+                    </label>
+                    <input type="text" id="editDepartemen" name="departemen"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
+                        placeholder="Enter departemen">
+                    <span class="text-red-500 text-sm error-message" id="error-edit-departemen"></span>
                 </div>
 
                 <!-- Password (Optional for Edit) -->
@@ -82,7 +113,9 @@
 
                 <!-- Status -->
                 <div class="col-span-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Status <span class="text-red-500">*</span>
+                    </label>
                     <select id="editStatus" name="status" required
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
                         <option value="active">Active</option>

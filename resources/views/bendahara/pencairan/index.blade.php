@@ -132,9 +132,13 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                         Program Kerja
                                     </span>
-                                @else
+                                @elseif($item['type'] === 'pengajuan_budget')
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                                         Pengajuan Budget
+                                    </span>
+                                @elseif($item['type'] === 'pengajuan_hutang')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                        Pengajuan Hutang
                                     </span>
                                 @endif
                             </td>

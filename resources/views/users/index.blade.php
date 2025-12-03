@@ -137,95 +137,127 @@
     </div>
 
     <!-- Table Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full" id="usersTable">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Username</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
-                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full" id="usersTable">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
+                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">NIK / QR Code</th> <!-- ✅ GABUNG -->
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Username</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
+                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="usersTableBody">
+                @forelse($users as $index => $user)
+                    <tr class="hover:bg-gray-50 transition">
+                        <!-- No -->
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ $loop->iteration }}</td>
+                        
+                        <!-- User -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    <div class="h-10 w-10 rounded-full bg-black flex items-center justify-center">
+                                        <span class="text-white text-sm font-medium">
+                                            {{ substr($user->name, 0, 1) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <!-- ✅ NIK & QR Code (Gabung dalam 1 kolom) -->
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col items-center space-y-2">
+                                @if($user->nik)
+                                    <!-- QR Code -->
+                                    <div class="qr-code-container" id="qr-{{ $user->id }}" data-nik="{{ $user->nik }}"></div>
+                                    <!-- NIK Text -->
+                                    <div class="text-xs font-semibold text-gray-700">
+                                        {{ $user->nik }}
+                                    </div>
+                                @else
+                                    <span class="text-xs text-gray-400">No NIK</span>
+                                @endif
+                            </div>
+                        </td>
+                        
+                        <!-- Username -->
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-semibold text-gray-900">{{ $user->username }}</div>
+                        </td>
+                        
+                        <!-- Role -->
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white">
+                                {{ $user->role->nama ?? 'No Role' }}
+                            </span>
+                        </td>
+                        
+                        <!-- Bidang -->
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">{{ $user->bidang->nama ?? 'No Bidang' }}</div>
+                        </td>   
+                        
+                        <!-- Status -->
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $user->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ ucfirst($user->status) }}
+                            </span>
+                        </td>
+                        
+                        <!-- Joined -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ $user->created_at->format('d M Y') }}
+                        </td>
+                        
+                        <!-- Aksi -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-center space-x-2">
+                                <button onclick="openEditModal({{ $user->id }})"
+                                        class="bg-orange-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-orange-600 transition">
+                                    Edit
+                                </button>
+                                @if($user->id != Auth::id())
+                                <button onclick="deleteUser({{ $user->id }})"
+                                        class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-600 transition">
+                                    Delete
+                                </button>
+                                @endif
+                            </div>
+                        </td>
                     </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200" id="usersTableBody">
-                    @forelse($users as $index => $user)
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $loop->iteration }}</td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10">
-                                        <div class="h-10 w-10 rounded-full bg-black flex items-center justify-center">
-                                            <span class="text-white text-sm font-medium">
-                                                {{ substr($user->name, 0, 1) }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm font-semibold text-gray-900">{{ $user->username }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white">
-                                    {{ $user->role->nama ?? 'No Role' }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $user->bidang->nama ?? 'No Bidang' }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $user->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    {{ ucfirst($user->status) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $user->created_at->format('d M Y') }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <button onclick="openEditModal({{ $user->id }})"
-                                            class="bg-orange-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-orange-600 transition">
-                                        Edit
-                                    </button>
-                                    @if($user->id != Auth::id())
-                                    <button onclick="deleteUser({{ $user->id }})"
-                                            class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-600 transition">
-                                        Delete
-                                    </button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="px-6 py-16 text-center">
-                                <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
-                                </svg>
-                                <p class="mt-4 text-gray-600 font-semibold">No users found</p>
-                                <p class="text-gray-500 text-sm">Click "Add User" to create one</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Footer: Pagination -->
-        @if($users->hasPages())
-            <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
-                {{ $users->links() }}
-            </div>
-        @endif
+                @empty
+                    <tr>
+                        <td colspan="9" class="px-6 py-16 text-center"> <!-- ✅ Update colspan jadi 9 -->
+                            <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                            </svg>
+                            <p class="mt-4 text-gray-600 font-semibold">No users found</p>
+                            <p class="text-gray-500 text-sm">Click "Add User" to create one</p>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
+
+    <!-- Footer: Pagination -->
+    @if($users->hasPages())
+        <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
+            {{ $users->links() }}
+        </div>
+    @endif
+</div>
 </div>
 
 <!-- Include Create Modal -->
@@ -407,44 +439,46 @@
     }
 
     async function openEditModal(id) {
-        try {
-            const response = await fetch(`/users/${id}`);
-            const data = await response.json();
+    try {
+        const response = await fetch(`/users/${id}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const user = data.data;
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editName').value = user.name;
+            document.getElementById('editNik').value = user.nik || ''; // ✅ TAMBAH
+            document.getElementById('editUsername').value = user.username;
+            document.getElementById('editDepartemen').value = user.departemen || ''; // ✅ TAMBAH
+            document.getElementById('editStatus').value = user.status;
             
-            if (data.success) {
-                const user = data.data;
-                document.getElementById('editUserId').value = user.id;
-                document.getElementById('editName').value = user.name;
-                document.getElementById('editUsername').value = user.username;
-                document.getElementById('editStatus').value = user.status;
-                
-                // Set Select2 values
-                $('#editRoleId').val(user.role_id).trigger('change');
-                $('#editBidangId').val(user.bidang_id).trigger('change');
-                
-                clearErrors();
-                
-                const modal = document.getElementById('editModal');
-                
-                // Prevent body scroll
-                document.body.style.overflow = 'hidden';
-                
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                
-                // Force reflow
-                void modal.offsetWidth;
-                
-                // Trigger animation
-                requestAnimationFrame(() => {
-                    modal.classList.add('active');
-                });
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            Swal.fire('Error!', 'Failed to load user data', 'error');
+            // Set Select2 values
+            $('#editRoleId').val(user.role_id).trigger('change');
+            $('#editBidangId').val(user.bidang_id).trigger('change');
+            
+            clearErrors();
+            
+            const modal = document.getElementById('editModal');
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Force reflow
+            void modal.offsetWidth;
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                modal.classList.add('active');
+            });
         }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire('Error!', 'Failed to load user data', 'error');
     }
+}
 
     function closeCreateModal() {
         const modal = document.getElementById('createModal');
@@ -819,6 +853,26 @@
             closeEditModal();
             closeImportModal();
         }
+    });
+
+    // ✅ Generate QR Code untuk setiap user
+    document.addEventListener('DOMContentLoaded', function() {
+        // Generate QR codes for all users
+        document.querySelectorAll('.qr-code-container').forEach(container => {
+            const nik = container.getAttribute('data-nik');
+            if (nik) {
+                new QRCode(container, {
+                    text: nik,
+                    width: 45,
+                    height: 45,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            }
+        });
+        
+        initializeSelect2();
     });
 </script>
 @endpush
