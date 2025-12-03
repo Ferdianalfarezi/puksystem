@@ -36,4 +36,10 @@ class EventAttendance extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // Helper: Format waktu hadir
+    public function getWaktuHadirFormattedAttribute(): string
+    {
+        return $this->waktu_hadir->format('d M Y, H:i:s');
+    }
 }

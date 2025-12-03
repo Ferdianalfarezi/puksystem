@@ -64,6 +64,12 @@ class User extends Authenticatable
     // ✅ NEW: Helper untuk generate QR Code data
     public function getQrCodeDataAttribute(): string
     {
-        return $this->nik; // NIK akan di-encode ke QR Code
+        return $this->nik ?? ''; // NIK akan di-encode ke QR Code
+    }
+
+    // ✅ NEW: Check if user attended specific event
+    public function hasAttendedEvent(int $eventId): bool
+    {
+        return $this->eventAttendances()->where('event_id', $eventId)->exists();
     }
 }

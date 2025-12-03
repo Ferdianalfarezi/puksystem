@@ -172,6 +172,113 @@
         </div>
     </div>
 
+    <!-- ===== MY DEBT SECTION (Hidden by Default) ===== -->
+    @php
+        $myDebt = \App\Models\PengajuanHutang::where('user_id', auth()->id())
+            ->where('status', 'dicairkan')
+            ->get();
+        $myTotalHutang = $myDebt->sum('jumlah');
+        $myTotalSisa = $myDebt->sum('sisa_hutang');
+        $myTotalTerbayar = $myTotalHutang - $myTotalSisa;
+    @endphp
+
+    @if($myDebt->count() > 0)
+    <div class="bg-gradient-to-r from-red-50 to-red-50 border border-red-200 rounded-xl p-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <!-- Icon Wallet -->
+                <div class="bg-red-500 rounded-lg p-3">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                </div>
+
+                <!-- Info -->
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Hutang Saya</h3>
+                    <p class="text-sm text-gray-600 mt-1">
+                        Anda memiliki <span class="font-semibold text-red-700">{{ $myDebt->count() }} hutang aktif</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Toggle Button (Eye Icon) -->
+            <button onclick="toggleMyDebt()" 
+                    class="bg-white hover:bg-gray-100 text-gray-700 p-3 rounded-lg transition shadow-sm"
+                    title="Tampilkan/Sembunyikan">
+                <svg id="eyeIconOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                <svg id="eyeIconClosed" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Detail Section (Hidden by Default) -->
+        <div id="myDebtDetail" class="hidden mt-6 space-y-4">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Total Hutang -->
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <p class="text-xs text-gray-600 font-semibold uppercase">Total Hutang</p>
+                    <p class="text-2xl font-bold text-red-600 mt-2">
+                        Rp {{ number_format($myTotalHutang, 0, ',', '.') }}
+                    </p>
+                </div>
+
+                <!-- Total Terbayar -->
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <p class="text-xs text-gray-600 font-semibold uppercase">Terbayar</p>
+                    <p class="text-2xl font-bold text-green-600 mt-2">
+                        Rp {{ number_format($myTotalTerbayar, 0, ',', '.') }}
+                    </p>
+                </div>
+
+                <!-- Sisa Hutang -->
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <p class="text-xs text-gray-600 font-semibold uppercase">Sisa Hutang</p>
+                    <p class="text-2xl font-bold text-orange-600 mt-2">
+                        Rp {{ number_format($myTotalSisa, 0, ',', '.') }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- List Hutang -->
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <h4 class="text-sm font-bold text-gray-900 mb-3">Detail Hutang</h4>
+                <div class="space-y-3">
+                    @foreach($myDebt as $debt)
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-gray-900">{{ $debt->nama }}</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ $debt->tanggal->format('d M Y') }}</p>
+                                
+                                <!-- Progress Bar -->
+                                <div class="flex items-center space-x-2 mt-2">
+                                    <div class="flex-1 bg-gray-200 rounded-full h-1.5">
+                                        <div class="bg-green-500 h-1.5 rounded-full" style="width: {{ $debt->persen_lunas }}%"></div>
+                                    </div>
+                                    <span class="text-xs font-semibold text-gray-700">{{ number_format($debt->persen_lunas, 0) }}%</span>
+                                </div>
+                            </div>
+
+                            <div class="text-right ml-4">
+                                <p class="text-sm font-bold text-red-600">
+                                    Rp {{ number_format($debt->sisa_hutang, 0, ',', '.') }}
+                                </p>
+                                <p class="text-xs text-gray-500">sisa</p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    <!-- ===== END MY DEBT SECTION ===== -->
+
     <!-- ===== GANTT CHART ===== -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <!-- Header dengan Toggle View -->
@@ -347,6 +454,92 @@
         </div>
     </div>
     <!-- ===== END GANTT ===== -->
+
+    <!-- ===== USER EVENT ATTENDANCE HISTORY ===== -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-lg font-bold text-gray-900">Riwayat Kehadiran Event Saya</h2>
+                <p class="text-sm text-gray-600 mt-1">Daftar event yang pernah Anda ikuti</p>
+            </div>
+            <p class="text-sm text-gray-700">
+                Total Kehadiran Acara: <span class="font-semibold">{{ auth()->user()->eventAttendances()->count() }}</span>
+            </p>
+        </div>
+
+        @php
+            $myAttendances = auth()->user()->eventAttendances()
+                ->with('event')
+                ->orderBy('waktu_hadir', 'desc')
+                ->paginate(5); // ✅ 5 per page dengan pagination
+        @endphp
+
+        @if($myAttendances->count() > 0)
+            <div class="space-y-3">
+                @foreach($myAttendances as $attendance)
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                        <div class="flex items-center space-x-4">
+                            <!-- Icon Event -->
+                            <div class="bg-blue-500 rounded-lg p-3 flex-shrink-0">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+
+                            <!-- Event Info -->
+                            <div>
+                                <h3 class="font-semibold text-gray-900">{{ $attendance->event->nama_event }}</h3>
+                                <div class="flex items-center space-x-4 mt-1 text-sm text-gray-600">
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        {{ $attendance->event->waktu_pelaksanaan->format('d M Y') }}
+                                    </div>
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        {{ $attendance->event->tempat_pelaksanaan }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Waktu Hadir -->
+                        <div class="text-right">
+                            <div class="flex items-center text-green-600">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="text-sm font-semibold">Hadir</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">
+                                {{ $attendance->waktu_hadir->format('d M Y, H:i') }}
+                            </p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <!-- ✅ Pagination Links -->
+            @if($myAttendances->hasPages())
+                <div class="mt-6 flex justify-center">
+                    {{ $myAttendances->links() }}
+                </div>
+            @endif
+        @else
+            <div class="text-center py-12">
+                <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p class="mt-4 text-gray-600 font-semibold">Belum Ada Kehadiran Event</p>
+                <p class="text-sm text-gray-500 mt-1">Anda belum pernah mengikuti event apapun</p>
+            </div>
+        @endif
+    </div>
+    <!-- ===== END USER EVENT ATTENDANCE HISTORY ===== -->
 
     <!-- ===== BAR CHART ===== -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
@@ -646,5 +839,23 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 });
+
+function toggleMyDebt() {
+    const detail = document.getElementById('myDebtDetail');
+    const eyeOpen = document.getElementById('eyeIconOpen');
+    const eyeClosed = document.getElementById('eyeIconClosed');
+    
+    if (detail.classList.contains('hidden')) {
+        // Show
+        detail.classList.remove('hidden');
+        eyeOpen.classList.add('hidden');
+        eyeClosed.classList.remove('hidden');
+    } else {
+        // Hide
+        detail.classList.add('hidden');
+        eyeOpen.classList.remove('hidden');
+        eyeClosed.classList.add('hidden');
+    }
+}
 </script>
 @endpush

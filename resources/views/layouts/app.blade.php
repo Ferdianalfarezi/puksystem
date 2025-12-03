@@ -419,6 +419,22 @@
             @endif
             @endif
 
+            <!-- ✅ NEW: Menu Events (untuk superadmin & admin) -->
+            @if(in_array($userRole, ['superadmin', 'admin']))
+            <a href="{{ route('events.index') }}" 
+            class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('events.*') ? 'active' : '' }}"
+            :title="sidebarCollapsed ? 'Events' : ''">
+                <div class="w-5 h-5 mr-3 flex-shrink-0">
+                    <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <span class="sidebar-text font-medium" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
+                    Events
+                </span>
+            </a>
+            @endif
+
             <!-- Divider -->
             <div class="py-2">
                 <div class="border-t border-gray-200/60"></div>

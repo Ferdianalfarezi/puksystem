@@ -54,4 +54,25 @@ class Event extends Model
     {
         return $this->attendances()->where('user_id', $userId)->exists();
     }
+
+    // Helper: Sisa kuota peserta
+    public function getSisaKuotaAttribute(): int
+    {
+        return max(0, $this->jumlah_peserta - $this->total_hadir);
+    }
+
+    // Helper: Status event (upcoming, ongoing, finished)
+    public function getStatusEventAttribute(): string
+    {
+        $today = now()->startOfDay();
+        $eventDate = $this->waktu_pelaksanaan->startOfDay();
+
+        if ($eventDate->isFuture()) {
+            return 'upcoming';
+        } elseif ($eventDate->isToday()) {
+            return 'ongoing';
+        } else {
+            return 'finished';
+        }
+    }
 }
