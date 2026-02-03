@@ -278,15 +278,16 @@ function onScanSuccess(decodedText, decodedResult) {
     // Stop scanner temporarily to prevent multiple scans
     stopScanner();
     
-    // Process the scanned NIK
-    processAttendance(decodedText);
+    // Process the scanned NIK - dengan parameter fromScan = true
+    processAttendance(decodedText, true);
 }
 
 function onScanFailure(error) {
     // Silent - don't show errors for scan failures
 }
 
-async function processAttendance(nik) {
+// ✅ TAMBAHKAN PARAMETER fromScan untuk membedakan dari scan atau manual
+async function processAttendance(nik, fromScan = false) {
     try {
         const response = await fetch(`/events/{{ $event->id }}/scan`, {
             method: 'POST',
@@ -314,10 +315,12 @@ async function processAttendance(nik) {
             // Refresh attendance list
             await refreshAttendance();
 
-            // Restart scanner after 2 seconds
-            setTimeout(() => {
-                startScanner();
-            }, 2000);
+            // ✅ HANYA restart scanner jika dari scan, BUKAN dari manual input
+            if (fromScan) {
+                setTimeout(() => {
+                    startScanner();
+                }, 2000);
+            }
         } else {
             Swal.fire({
                 icon: 'error',
@@ -325,22 +328,27 @@ async function processAttendance(nik) {
                 text: data.message,
             });
 
-            // Restart scanner
-            setTimeout(() => {
-                startScanner();
-            }, 1500);
+            // ✅ HANYA restart scanner jika dari scan
+            if (fromScan) {
+                setTimeout(() => {
+                    startScanner();
+                }, 1500);
+            }
         }
     } catch (error) {
         console.error('Error:', error);
         Swal.fire('Error!', 'Terjadi kesalahan sistem.', 'error');
 
-        // Restart scanner
-        setTimeout(() => {
-            startScanner();
-        }, 1500);
+        // ✅ HANYA restart scanner jika dari scan
+        if (fromScan) {
+            setTimeout(() => {
+                startScanner();
+            }, 1500);
+        }
     }
 }
 
+// ✅ Manual submit TIDAK mengirim parameter fromScan (default = false)
 function manualSubmit() {
     const nik = document.getElementById('manualNik').value.trim();
     
@@ -349,7 +357,7 @@ function manualSubmit() {
         return;
     }
 
-    processAttendance(nik);
+    processAttendance(nik); // fromScan = false (default)
     document.getElementById('manualNik').value = '';
 }
 

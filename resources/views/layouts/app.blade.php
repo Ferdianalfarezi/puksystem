@@ -348,18 +348,42 @@
                     Pengajuan Budget
                 </span>
             </a>
+            @endif
 
-            <!-- ✅ UBAH: Menu Hutang (Dropdown Group - untuk superadmin, admin bidang 4, bendahara) -->
+            
+
+            <!-- ✅ Menu Events (untuk superadmin & admin) -->
+            @if(in_array($userRole, ['superadmin', 'admin']))
+            <a href="{{ route('events.index') }}" 
+            class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('events.*') ? 'active' : '' }}"
+            :title="sidebarCollapsed ? 'Events' : ''">
+                <div class="w-5 h-5 mr-3 flex-shrink-0">
+                    <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <span class="sidebar-text font-medium" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
+                    Events
+                </span>
+            </a>
+            @endif
+
+            <!-- Divider -->
+            <div class="py-2">
+                <div class="border-t border-gray-200/60"></div>
+            </div>
+
+            <!-- ✅ Menu Hutang (Dropdown Group - untuk superadmin, admin bidang 4, bendahara) -->
             @php
                 $isBidang4 = auth()->user()->bidang_id == 4;
                 $canAccessHutang = $userRole === 'superadmin' || $userRole === 'bendahara' || ($userRole === 'admin' && $isBidang4);
             @endphp
             
             @if($canAccessHutang)
-            <div x-data="{ open: {{ request()->routeIs('pengajuan-hutang.*') || request()->routeIs('list-hutang') ? 'true' : 'false' }} }">
+            <div x-data="{ open: {{ request()->routeIs('pengajuan-hutang.*') || request()->routeIs('list-hutang') || request()->routeIs('bendahara.hutang.*') ? 'true' : 'false' }} }">
                 <!-- Parent Menu - Hutang -->
                 <button @click="open = !open" 
-                        class="menu-item w-full flex items-center justify-between px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('pengajuan-hutang.*') || request()->routeIs('list-hutang') ? 'active' : '' }}"
+                        class="menu-item w-full flex items-center justify-between px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('pengajuan-hutang.*') || request()->routeIs('list-hutang') || request()->routeIs('bendahara.hutang.*') ? 'active' : '' }}"
                         :title="sidebarCollapsed ? 'Hutang' : ''">
                     <div class="flex items-center flex-1">
                         <div class="w-5 h-5 mr-3 flex-shrink-0">
@@ -404,7 +428,18 @@
                     </a>
                     @endif
 
-                    <!-- Submenu: Hutang Aktif (untuk superadmin & bendahara) -->
+                    <!-- ✅ Submenu: Verifikasi Hutang (untuk bendahara) -->
+                    @if($userRole === 'bendahara')
+                    <a href="{{ route('bendahara.hutang.index') }}" 
+                       class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('bendahara.hutang.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Verifikasi Hutang</span>
+                    </a>
+                    @endif
+
+                    <!-- ✅ Submenu: Hutang Aktif (untuk superadmin & bendahara) -->
                     @if($userRole === 'superadmin' || $userRole === 'bendahara')
                     <a href="{{ route('list-hutang') }}" 
                        class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('list-hutang') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
@@ -417,30 +452,7 @@
                 </div>
             </div>
             @endif
-            @endif
-
-            <!-- ✅ NEW: Menu Events (untuk superadmin & admin) -->
-            @if(in_array($userRole, ['superadmin', 'admin']))
-            <a href="{{ route('events.index') }}" 
-            class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('events.*') ? 'active' : '' }}"
-            :title="sidebarCollapsed ? 'Events' : ''">
-                <div class="w-5 h-5 mr-3 flex-shrink-0">
-                    <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <span class="sidebar-text font-medium" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
-                    Events
-                </span>
-            </a>
-            @endif
-
-            <!-- Divider -->
-            <div class="py-2">
-                <div class="border-t border-gray-200/60"></div>
-            </div>
-
-
+            
             <!-- Menu Group: Verifikasi -->
             @php
                 $allowedRoles = ['superadmin', 'bendahara', 'sekretaris', 'ketua'];
@@ -501,15 +513,6 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <span>Pengajuan Budget</span>
-                        </a>
-
-                        <!-- Submenu Bendahara - Pengajuan Hutang -->
-                        <a href="{{ route('bendahara.hutang.index') }}" 
-                           class="submenu-item flex items-center px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition {{ request()->routeIs('bendahara.hutang.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                            <span>Pengajuan Hutang</span>
                         </a>
 
                         <!-- Submenu Pencairan untuk Bendahara -->
@@ -594,13 +597,6 @@
                                             hover:bg-gray-100 text-gray-600 transition
                                             {{ request()->routeIs('bendahara.pengajuan.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
                                         Pengajuan Budget
-                                    </a>
-
-                                    <a href="{{ route('bendahara.hutang.index') }}"
-                                    class="flex items-center px-3 py-2 text-sm rounded-lg
-                                            hover:bg-gray-100 text-gray-600 transition
-                                            {{ request()->routeIs('bendahara.hutang.*') ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
-                                        Pengajuan Hutang
                                     </a>
 
                                     <a href="{{ route('pencairan.index') }}"
