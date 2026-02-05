@@ -3,487 +3,215 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProgramKerja;
-use App\Models\ProgramKerjaHistory;
+use App\Models\Bidang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ProgramKerjaController extends Controller
 {
     public function index(Request $request)
     {
-        $user = Auth::user();
-        $userRole = $user->role->nama ?? '';
+        $userRole = Auth::user()->role->nama ?? '';
+        $userBidangId = Auth::user()->bidang_id ?? null;
         
-        $allBidangs = \App\Models\Bidang::orderBy('nama')->get();
+        // Query untuk semua program kerja (untuk statistics dan Gantt Chart)
+        $queryAll = ProgramKerja::with('bidang')->latest();
         
-        // ✅ TAMBAHKAN: Get perPage parameter (default 20)
+        // Query untuk tabel (bisa difilter per bidang)
+        $query = ProgramKerja::with('bidang')->latest();
+        
+        // Filter berdasarkan role
+        if (!in_array($userRole, ['superadmin', 'sekretaris'])) {
+            // Admin hanya lihat bidang sendiri
+            $query->where('bidang_id', $userBidangId);
+            $queryAll->where('bidang_id', $userBidangId);
+        }
+        
+        // Filter berdasarkan bidang yang dipilih (hanya untuk superadmin/sekretaris)
+        $selectedBidangId = 'all';
+        
+        if (in_array($userRole, ['superadmin', 'sekretaris']) && 
+            $request->has('bidang_id') && 
+            $request->bidang_id !== 'all') {
+            
+            $selectedBidangId = $request->bidang_id;
+            $query->where('bidang_id', $selectedBidangId);
+            $queryAll->where('bidang_id', $selectedBidangId);
+        }
+        
+        // Get semua data untuk statistics dan Gantt Chart
+        $allProgramKerjas = $queryAll->get();
+        
+        // Paginate untuk table
         $perPage = $request->get('perPage', 20);
         
-        if (in_array($userRole, ['superadmin', 'sekretaris'])) {
-            $bidangs = $allBidangs;
-            $selectedBidangId = $request->get('bidang_id', 'all');
-            
-            $baseQuery = ProgramKerja::with(['bidang', 'submittedBy']);
-            
-            if ($selectedBidangId !== 'all') {
-                $baseQuery->where('bidang_id', $selectedBidangId);
-            }
-            
-            $allProgramKerjas = $baseQuery->get();
-            
-            // ✅ UPDATE: Handle "all" case
-            if ($perPage === 'all') {
-                $programKerjas = $baseQuery->latest()->get();
-                // Convert to LengthAwarePaginator for consistent interface
-                $programKerjas = new \Illuminate\Pagination\LengthAwarePaginator(
-                    $programKerjas,
-                    $programKerjas->count(),
-                    $programKerjas->count(),
-                    1,
-                    ['path' => $request->url(), 'query' => $request->query()]
-                );
-            } else {
-                $programKerjas = $baseQuery->latest()->paginate($perPage);
-            }
-            
-            // ✅ TAMBAHKAN: Append perPage ke pagination links
-            if ($selectedBidangId !== 'all') {
-                $programKerjas->appends(['bidang_id' => $selectedBidangId]);
-            }
-            $programKerjas->appends(['perPage' => $perPage]);
-            
-            return view('program-kerja.index', compact(
-                'programKerjas',
-                'allProgramKerjas',
-                'bidangs', 
-                'selectedBidangId', 
-                'allBidangs',
-                'perPage' // ✅ PASS ke view
-            ));
-            
+        if ($perPage === 'all') {
+            $programKerjas = $query->get();
         } else {
-            $baseQuery = ProgramKerja::with(['bidang', 'submittedBy'])
-                ->forBidang($user->bidang_id);
-            
-            $allProgramKerjas = $baseQuery->get();
-            
-            // ✅ UPDATE: Handle "all" case
-            if ($perPage === 'all') {
-                $programKerjas = $baseQuery->latest()->get();
-                $programKerjas = new \Illuminate\Pagination\LengthAwarePaginator(
-                    $programKerjas,
-                    $programKerjas->count(),
-                    $programKerjas->count(),
-                    1,
-                    ['path' => $request->url(), 'query' => $request->query()]
-                );
-            } else {
-                $programKerjas = $baseQuery->latest()->paginate($perPage);
-            }
-            
-            // ✅ TAMBAHKAN: Append perPage ke pagination links
-            $programKerjas->appends(['perPage' => $perPage]);
-            
-            $bidangs = collect();
-            $selectedBidangId = null;
-            
-            return view('program-kerja.index', compact(
-                'programKerjas',
-                'allProgramKerjas',
-                'bidangs', 
-                'selectedBidangId', 
-                'allBidangs',
-                'perPage' // ✅ PASS ke view
-            ));
+            $programKerjas = $query->paginate($perPage);
         }
-    }
-
-    public function create()
-    {
-        return view('program-kerja.create');
+        
+        // Ambil data bidang untuk filter dan modal create
+        $bidangsForFilter = collect();
+        $bidangsForCreate = collect();
+        
+        if (in_array($userRole, ['superadmin', 'sekretaris'])) {
+            $bidangsForFilter = Bidang::all();
+            $bidangsForCreate = Bidang::all();
+        } else {
+            // Untuk admin biasa, hanya bidang mereka sendiri
+            $bidangsForFilter = Bidang::where('id', $userBidangId)->get();
+            $bidangsForCreate = Bidang::where('id', $userBidangId)->get();
+        }
+        
+        return view('program-kerja.index', [
+            'programKerjas' => $programKerjas,
+            'bidangs' => $bidangsForFilter, // Untuk filter dropdown
+            'bidangsForCreate' => $bidangsForCreate, // Untuk modal create
+            'selectedBidangId' => $selectedBidangId,
+            'perPage' => $perPage,
+            'allProgramKerjas' => $allProgramKerjas,
+            'userRole' => $userRole
+        ]);
     }
 
     public function store(Request $request)
     {
-        $user = Auth::user();
-        $userRole = $user->role->nama ?? '';
+        $userRole = Auth::user()->role->nama ?? '';
+        $userBidangId = Auth::user()->bidang_id ?? null;
         
+        // Validasi
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'anggaran' => 'required|numeric|min:0',
-            'jenis_pengeluaran' => 'required|in:' . implode(',', ProgramKerja::JENIS_PENGELUARAN), // ✅ TAMBAHKAN
-            'tahun' => 'required|digits:4|integer|min:2000|max:2100',
+            'jenis_pengeluaran' => 'nullable|string|max:100',
+            'tahun' => 'required|integer|min:2000|max:2100',
             'tanggal' => 'required|date',
-            'bidang_id' => $userRole === 'superadmin' ? 'required|exists:bidangs,id' : 'nullable',
         ]);
+        
+        // Untuk admin biasa, otomatis set bidang_id dari user
+        if (!in_array($userRole, ['superadmin', 'sekretaris'])) {
+            $validated['bidang_id'] = $userBidangId;
+        } else {
+            // Untuk superadmin/sekretaris, ambil dari input form
+            $request->validate(['bidang_id' => 'required|exists:bidangs,id']);
+            $validated['bidang_id'] = $request->bidang_id;
+        }
 
-        if ($userRole === 'superadmin') {
+        ProgramKerja::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Program kerja berhasil ditambahkan!'
+        ]);
+    }
+
+    public function show($id)
+    {
+        $userRole = Auth::user()->role->nama ?? '';
+        $userBidangId = Auth::user()->bidang_id ?? null;
+        
+        $programKerja = ProgramKerja::with('bidang')->findOrFail($id);
+        
+        // Cek authorization
+        if (!in_array($userRole, ['superadmin', 'sekretaris']) && 
+            $programKerja->bidang_id != $userBidangId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses ke program kerja ini'
+            ], 403);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $programKerja
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $userRole = Auth::user()->role->nama ?? '';
+        $userBidangId = Auth::user()->bidang_id ?? null;
+        
+        $programKerja = ProgramKerja::findOrFail($id);
+        
+        // Cek authorization
+        if (!in_array($userRole, ['superadmin', 'sekretaris']) && 
+            $programKerja->bidang_id != $userBidangId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk mengedit program kerja ini'
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'nama' => 'required|string|max:255',
+            'anggaran' => 'required|numeric|min:0',
+            'jenis_pengeluaran' => 'nullable|string|max:100',
+            'tahun' => 'required|integer|min:2000|max:2100',
+            'tanggal' => 'required|date',
+        ]);
+        
+        // Jika superadmin/sekretaris, bisa ubah bidang
+        if (in_array($userRole, ['superadmin', 'sekretaris'])) {
+            $request->validate(['bidang_id' => 'required|exists:bidangs,id']);
             $validated['bidang_id'] = $request->bidang_id;
         } else {
-            $validated['bidang_id'] = $user->bidang_id;
-        }
-        
-        $validated['status'] = 'draft';
-
-        DB::beginTransaction();
-        try {
-            $programKerja = ProgramKerja::create($validated);
-
-            ProgramKerjaHistory::create([
-                'program_kerja_id' => $programKerja->id,
-                'tanggal_program' => $programKerja->tanggal,
-                'status_dari' => null,
-                'status_ke' => 'draft',
-                'catatan' => 'Program kerja dibuat',
-                'dilakukan_oleh' => Auth::id(),
-                'dilakukan_pada' => now(),
-                'data_snapshot' => [
-                    'nama' => $programKerja->nama,
-                    'anggaran' => $programKerja->anggaran,
-                    'bidang' => $programKerja->bidang->nama,
-                    'tahun' => $programKerja->tahun,
-                    'tanggal' => $programKerja->tanggal->format('Y-m-d'),
-                ],
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Program kerja berhasil dibuat dengan status draft.'
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function show(ProgramKerja $programKerja)
-    {
-        $user = Auth::user();
-        $userRole = $user->role->nama ?? '';
-        
-        // Authorization check
-        if (!in_array($userRole, ['superadmin', 'sekretaris'])) {
-            if ($programKerja->bidang_id !== $user->bidang_id) {
-                if (request()->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Unauthorized access.'
-                    ], 403);
-                }
-                abort(403, 'Unauthorized access.');
-            }
+            // Admin biasa tidak bisa ubah bidang
+            $validated['bidang_id'] = $programKerja->bidang_id;
         }
 
-        // Load all relationships
-        $programKerja->load([
-            'bidang', 
-            'submittedBy', 
-            'reviewedByBendahara', 
-            'reviewedByKetua', 
-            'pencairan.dicairkanOleh'
+        $programKerja->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Program kerja berhasil diperbarui!'
         ]);
-
-        // If AJAX request (for modal)
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'id' => $programKerja->id,
-                    'nama' => $programKerja->nama,
-                    'anggaran' => $programKerja->anggaran,
-                    'tahun' => $programKerja->tahun,
-                    'tanggal' => $programKerja->tanggal,
-                    'tanggal_formatted' => $programKerja->tanggal ? $programKerja->tanggal->format('d M Y') : '-',
-                    'status' => $programKerja->status,
-                    'jenis_pengeluaran' => $programKerja->jenis_pengeluaran,
-                    'is_draft' => $programKerja->isDraft(),
-                    
-                    // Bidang
-                    'bidang' => [
-                        'id' => $programKerja->bidang->id,
-                        'nama' => $programKerja->bidang->nama,
-                    ],
-                    'bidang_id' => $programKerja->bidang_id,
-                    
-                    // Submission info
-                    'submitted_at' => $programKerja->submitted_at,
-                    'submitted_at_formatted' => $programKerja->submitted_at 
-                        ? $programKerja->submitted_at->format('d M Y, H:i') . ' WIB' 
-                        : null,
-                    'submitted_by_name' => $programKerja->submittedBy?->name,
-                    
-                    // Bendahara review
-                    'reviewed_at_bendahara' => $programKerja->reviewed_at_bendahara,
-                    'reviewed_at_bendahara_formatted' => $programKerja->reviewed_at_bendahara 
-                        ? $programKerja->reviewed_at_bendahara->format('d M Y, H:i') . ' WIB' 
-                        : null,
-                    'reviewed_by_bendahara_name' => $programKerja->reviewedByBendahara?->name,
-                    'catatan_bendahara' => $programKerja->catatan_bendahara,
-                    
-                    // Ketua review
-                    'reviewed_at_ketua' => $programKerja->reviewed_at_ketua,
-                    'reviewed_at_ketua_formatted' => $programKerja->reviewed_at_ketua 
-                        ? $programKerja->reviewed_at_ketua->format('d M Y, H:i') . ' WIB' 
-                        : null,
-                    'reviewed_by_ketua_name' => $programKerja->reviewedByKetua?->name,
-                    'catatan_ketua' => $programKerja->catatan_ketua,
-                    
-                    // Timestamps
-                    'created_at_formatted' => $programKerja->created_at->format('d M Y, H:i') . ' WIB',
-                    'updated_at_formatted' => $programKerja->updated_at->format('d M Y, H:i') . ' WIB',
-                    
-                    // Pencairan info
-                    'pencairan' => $programKerja->pencairan ? [
-                        'jumlah_dicairkan' => $programKerja->pencairan->jumlah_dicairkan,
-                        'tanggal_pencairan' => $programKerja->pencairan->tanggal_pencairan,
-                        'tanggal_pencairan_formatted' => $programKerja->pencairan->tanggal_pencairan 
-                            ? $programKerja->pencairan->tanggal_pencairan->format('d M Y, H:i') . ' WIB' 
-                            : '-',
-                        'metode_pencairan' => $programKerja->pencairan->metode_pencairan,
-                        'metode_pencairan_label' => $programKerja->pencairan->metode_pencairan_label ?? ucfirst(str_replace('_', ' ', $programKerja->pencairan->metode_pencairan)),
-                        'nomor_referensi' => $programKerja->pencairan->nomor_referensi,
-                        'dicairkan_oleh_name' => $programKerja->pencairan->dicairkanOleh?->name,
-                        'catatan' => $programKerja->pencairan->catatan,
-                    ] : null,
-                ]
-            ]);
-        }
-
-        // If not AJAX (for direct page view)
-        $programKerja->load(['histories']);
-        $allBidangs = \App\Models\Bidang::orderBy('nama')->get();
-        
-        return view('program-kerja.detail', compact('programKerja', 'allBidangs'));
     }
 
-    public function edit(ProgramKerja $programKerja)
+    public function destroy($id)
     {
-        $user = Auth::user();
-        $userRole = $user->role->nama ?? '';
+        $userRole = Auth::user()->role->nama ?? '';
+        $userBidangId = Auth::user()->bidang_id ?? null;
         
-        if (!in_array($userRole, ['superadmin'])) {
-            if ($programKerja->bidang_id !== $user->bidang_id) {
-                abort(403, 'Unauthorized access.');
-            }
-        }
-
-        if (!$programKerja->isDraft()) {
-            return redirect()->route('program-kerja.index')
-                ->with('error', 'Hanya program kerja dengan status draft yang bisa diedit.');
-        }
-
-        return view('program-kerja.edit', compact('programKerja'));
-    }
-
-    public function update(Request $request, ProgramKerja $programKerja)
-    {
-        $user = Auth::user();
-        $userRole = $user->role->nama ?? '';
+        $programKerja = ProgramKerja::findOrFail($id);
         
-        if (!in_array($userRole, ['superadmin'])) {
-            if ($programKerja->bidang_id !== $user->bidang_id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized access.'
-                ], 403);
-            }
-        }
-
-        if (!$programKerja->isDraft()) {
+        // Cek authorization
+        if (!in_array($userRole, ['superadmin', 'sekretaris']) && 
+            $programKerja->bidang_id != $userBidangId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Hanya program kerja dengan status draft yang bisa diedit.'
-            ]);
+                'message' => 'Anda tidak memiliki akses untuk menghapus program kerja ini'
+            ], 403);
         }
 
-        $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'anggaran' => 'required|numeric|min:0',
-            'jenis_pengeluaran' => 'required|in:' . implode(',', ProgramKerja::JENIS_PENGELUARAN), // ✅ TAMBAHKAN
-            'tahun' => 'required|digits:4|integer|min:2000|max:2100',
-            'tanggal' => 'required|date',
-            'bidang_id' => $userRole === 'superadmin' ? 'required|exists:bidangs,id' : 'nullable',
+        $programKerja->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Program kerja berhasil dihapus!'
         ]);
-
-        if ($userRole === 'superadmin') {
-            $validated['bidang_id'] = $request->bidang_id;
-        }
-
-        DB::beginTransaction();
-        try {
-            $dataLama = [
-                'nama' => $programKerja->nama,
-                'anggaran' => $programKerja->anggaran,
-                'bidang' => $programKerja->bidang->nama,
-                'tahun' => $programKerja->tahun,
-                'tanggal' => $programKerja->tanggal ? $programKerja->tanggal->format('Y-m-d') : null,
-            ];
-
-            $programKerja->update($validated);
-            $programKerja->refresh();
-
-            ProgramKerjaHistory::create([
-                'program_kerja_id' => $programKerja->id,
-                'tanggal_program' => $programKerja->tanggal,
-                'status_dari' => 'draft',
-                'status_ke' => 'draft',
-                'catatan' => 'Program kerja diupdate',
-                'dilakukan_oleh' => Auth::id(),
-                'dilakukan_pada' => now(),
-                'data_snapshot' => [
-                    'data_lama' => $dataLama,
-                    'data_baru' => [
-                        'nama' => $programKerja->nama,
-                        'anggaran' => $programKerja->anggaran,
-                        'bidang' => $programKerja->bidang->nama,
-                        'tahun' => $programKerja->tahun,
-                        'tanggal' => $programKerja->tanggal->format('Y-m-d'),
-                    ],
-                ],
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Program kerja berhasil diupdate.'
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
     }
 
-    public function destroy(ProgramKerja $programKerja)
+    public function detail($id)
     {
-        $user = Auth::user();
-        $userRole = $user->role->nama ?? '';
+        $userRole = Auth::user()->role->nama ?? '';
+        $userBidangId = Auth::user()->bidang_id ?? null;
         
-        if (!in_array($userRole, ['superadmin'])) {
-            if ($programKerja->bidang_id !== $user->bidang_id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized access.'
-                ], 403);
-            }
-        }
-
-        if (!$programKerja->isDraft()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Hanya program kerja dengan status draft yang bisa dihapus.'
-            ]);
-        }
-
-        DB::beginTransaction();
-        try {
-            $dataProgramKerja = [
-                'nama' => $programKerja->nama,
-                'anggaran' => $programKerja->anggaran,
-                'bidang' => $programKerja->bidang->nama,
-                'tahun' => $programKerja->tahun,
-                'tanggal' => $programKerja->tanggal ? $programKerja->tanggal->format('Y-m-d') : null,
-            ];
-
-            $programKerjaId = $programKerja->id;
-
-            ProgramKerjaHistory::create([
-                'program_kerja_id' => $programKerjaId,
-                'tanggal_program' => $programKerja->tanggal,
-                'status_dari' => 'draft',
-                'status_ke' => 'deleted',
-                'catatan' => 'Program kerja dihapus',
-                'dilakukan_oleh' => Auth::id(),
-                'dilakukan_pada' => now(),
-                'data_snapshot' => $dataProgramKerja,
-            ]);
-
-            $programKerja->delete();
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Program kerja berhasil dihapus.'
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function submit(ProgramKerja $programKerja)
-    {
-        $user = Auth::user();
-        $userRole = $user->role->nama ?? '';
+        $programKerja = ProgramKerja::with('bidang')->findOrFail($id);
         
-        if (!in_array($userRole, ['superadmin'])) {
-            if ($programKerja->bidang_id !== $user->bidang_id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized access.'
-                ], 403);
-            }
-        }
-
-        if (!$programKerja->canBeSubmitted()) {
+        // Cek authorization
+        if (!in_array($userRole, ['superadmin', 'sekretaris']) && 
+            $programKerja->bidang_id != $userBidangId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Program kerja ini tidak bisa diajukan.'
-            ]);
+                'message' => 'Anda tidak memiliki akses ke detail program kerja ini'
+            ], 403);
         }
-
-        DB::beginTransaction();
-        try {
-            $statusLama = $programKerja->status;
-
-            $programKerja->update([
-                'status' => 'menunggu_konfirmasi_bendahara',
-                'submitted_at' => now(),
-                'submitted_by' => Auth::id(),
-            ]);
-
-            ProgramKerjaHistory::create([
-                'program_kerja_id' => $programKerja->id,
-                'tanggal_program' => $programKerja->tanggal,
-                'status_dari' => $statusLama,
-                'status_ke' => 'menunggu_konfirmasi_bendahara',
-                'catatan' => 'Program kerja diajukan untuk dikonfirmasi bendahara',
-                'dilakukan_oleh' => Auth::id(),
-                'dilakukan_pada' => now(),
-                'data_snapshot' => [
-                    'nama' => $programKerja->nama,
-                    'anggaran' => $programKerja->anggaran,
-                    'bidang' => $programKerja->bidang->nama,
-                    'tahun' => $programKerja->tahun,
-                    'tanggal' => $programKerja->tanggal ? $programKerja->tanggal->format('Y-m-d') : null,
-                ],
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Program kerja berhasil diajukan ke bendahara.'
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $programKerja
+        ]);
     }
 }

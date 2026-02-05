@@ -19,19 +19,22 @@
                 $userRole = Auth::user()->role->nama ?? '';
             @endphp
 
-            <!-- Dropdown Bidang (Hanya untuk Superadmin) -->
-            @if($userRole === 'superadmin')
+            <!-- Dropdown Bidang -->
+            @if(in_array($userRole, ['superadmin', 'sekretaris']))
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Bidang <span class="text-red-500">*</span></label>
                 <select id="createBidangId" name="bidang_id" required
                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
                     <option value="">-- Pilih Bidang --</option>
-                    @foreach($allBidangs as $bidang)
+                    @foreach($bidangsForCreate as $bidang)
                         <option value="{{ $bidang->id }}">{{ $bidang->nama }}</option>
                     @endforeach
                 </select>
                 <span class="text-red-500 text-sm error-message" id="error-create-bidang_id"></span>
             </div>
+            @else
+            <!-- Hidden input untuk admin biasa -->
+            <input type="hidden" id="createBidangId" name="bidang_id" value="{{ Auth::user()->bidang_id }}">
             @endif
 
             <!-- Nama Program -->
@@ -43,7 +46,7 @@
                 <span class="text-red-500 text-sm error-message" id="error-create-nama"></span>
             </div>
 
-            <!-- ✅ TAMBAHKAN: Jenis Pengeluaran -->
+            <!-- Jenis Pengeluaran -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Jenis Pengeluaran <span class="text-red-500">*</span></label>
                 <select id="createJenisPengeluaran" name="jenis_pengeluaran" required
@@ -75,7 +78,7 @@
                 </label>
                 <input 
                     type="number" 
-                    id="tahun" 
+                    id="createTahun" 
                     name="tahun"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
                     placeholder="Contoh: 2024"
@@ -93,7 +96,7 @@
                 </label>
                 <input 
                     type="date" 
-                    id="tanggal" 
+                    id="createTanggal" 
                     name="tanggal"
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
                     required
@@ -109,7 +112,7 @@
                     </svg>
                     <div class="text-sm text-blue-800">
                         <p class="font-semibold mb-1">Informasi:</p>
-                        <p>Program kerja akan disimpan sebagai <strong>draft</strong>. Anda dapat mengajukannya setelah data tersimpan.</p>
+                        <p>Program kerja akan disimpan sebagai <strong>data aktif</strong>.</p>
                     </div>
                 </div>
             </div>

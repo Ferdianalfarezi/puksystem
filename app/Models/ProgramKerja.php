@@ -5,8 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ProgramKerja extends Model
 {
@@ -16,29 +14,16 @@ class ProgramKerja extends Model
         'bidang_id',
         'nama',
         'anggaran',
-        'jenis_pengeluaran', // ✅ TAMBAHKAN
+        'jenis_pengeluaran',
         'tahun',
         'tanggal',
-        'status',
-        'submitted_at',
-        'submitted_by',
-        'reviewed_by_bendahara',
-        'reviewed_at_bendahara',
-        'catatan_bendahara',
-        'reviewed_by_ketua',
-        'reviewed_at_ketua',
-        'catatan_ketua',
     ];
 
     protected $casts = [
         'anggaran' => 'decimal:2',
-        'submitted_at' => 'datetime',
-        'reviewed_at_bendahara' => 'datetime',
-        'reviewed_at_ketua' => 'datetime',
         'tanggal' => 'date',
     ];
 
-    // ✅ TAMBAHKAN: Konstanta untuk jenis pengeluaran
     public const JENIS_PENGELUARAN = [
         'Kesekretariatan',
         'Perjalanan Dinas',
@@ -61,122 +46,23 @@ class ProgramKerja extends Model
         return $this->belongsTo(Bidang::class);
     }
 
-    public function submittedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'submitted_by');
-    }
-
-    public function reviewedByBendahara(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'reviewed_by_bendahara');
-    }
-
-    public function reviewedByKetua(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'reviewed_by_ketua');
-    }
-
-    public function pencairan(): HasOne
-    {
-        return $this->hasOne(Pencairan::class);
-    }
-
-    public function histories(): HasMany
-    {
-        return $this->hasMany(ProgramKerjaHistory::class);
-    }
-
     // Scopes
     public function scopeForBidang($query, $bidangId)
     {
         return $query->where('bidang_id', $bidangId);
     }
 
-    public function scopeByStatus($query, $status)
-    {
-        return $query->where('status', $status);
-    }
-
-    // ✅ TAMBAHKAN: Scope untuk filter jenis pengeluaran
     public function scopeByJenisPengeluaran($query, $jenis)
     {
         return $query->where('jenis_pengeluaran', $jenis);
     }
 
-    // Helper methods
-    public function isDraft(): bool
+    public function scopeByTahun($query, $tahun)
     {
-        return $this->status === 'draft';
+        return $query->where('tahun', $tahun);
     }
 
-    public function canBeSubmitted(): bool
-    {
-        return $this->status === 'draft';
-    }
-
-    public function isWaitingBendahara(): bool
-    {
-        return $this->status === 'menunggu_konfirmasi_bendahara';
-    }
-
-    public function isWaitingKetua(): bool
-    {
-        return $this->status === 'menunggu_approval_ketua';
-    }
-
-    public function isMenungguPencairan(): bool
-    {
-        return $this->status === 'menunggu_pencairan';
-    }
-
-    public function isDicairkan(): bool
-    {
-        return $this->status === 'dicairkan';
-    }
-
-    public function canBeCairkan(): bool
-    {
-        return $this->status === 'menunggu_pencairan';
-    }
-
-    public function isApproved(): bool
-    {
-        return $this->status === 'menunggu_pencairan';
-    }
-
-    public function isRejected(): bool
-    {
-        return in_array($this->status, ['ditolak_bendahara', 'ditolak_ketua']);
-    }
-
-    public function getStatusBadgeClass(): string
-    {
-        return match($this->status) {
-            'draft' => 'bg-gray-100 text-gray-800',
-            'menunggu_konfirmasi_bendahara' => 'bg-yellow-100 text-yellow-800',
-            'menunggu_approval_ketua' => 'bg-blue-100 text-blue-800',
-            'menunggu_pencairan' => 'bg-purple-100 text-purple-800',
-            'dicairkan' => 'bg-green-100 text-green-800',
-            'ditolak_bendahara', 'ditolak_ketua' => 'bg-red-100 text-red-800',
-            default => 'bg-gray-100 text-gray-800',
-        };
-    }
-
-    public function getStatusLabelAttribute(): string
-    {
-        return match($this->status) {
-            'draft' => 'Draft',
-            'menunggu_konfirmasi_bendahara' => 'Menunggu Bendahara',
-            'menunggu_approval_ketua' => 'Menunggu Ketua',
-            'menunggu_pencairan' => 'Menunggu Pencairan',
-            'dicairkan' => 'Dicairkan',
-            'ditolak_bendahara' => 'Ditolak Bendahara',
-            'ditolak_ketua' => 'Ditolak Ketua',
-            default => ucfirst(str_replace('_', ' ', $this->status)),
-        };
-    }
-
-    // ✅ TAMBAHKAN: Helper untuk badge jenis pengeluaran
+    // Helper method untuk badge warna
     public function getJenisPengeluaranBadgeClass(): string
     {
         return match($this->jenis_pengeluaran) {
@@ -190,5 +76,17 @@ class ProgramKerja extends Model
             'Iuaran FKJ', 'Iuran GM' => 'bg-orange-100 text-orange-800',
             default => 'bg-gray-100 text-gray-800',
         };
+    }
+
+    // Format angka
+    public function getAnggaranFormattedAttribute(): string
+    {
+        return 'Rp ' . number_format($this->anggaran, 0, ',', '.');
+    }
+
+    // Format tanggal
+    public function getTanggalFormattedAttribute(): string
+    {
+        return $this->tanggal ? $this->tanggal->format('d M Y') : '-';
     }
 }
