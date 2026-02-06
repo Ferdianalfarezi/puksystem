@@ -425,164 +425,138 @@
     </div>
 
     <!-- Table Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full" id="programKerjaTable">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        @if(in_array($userRole, ['admin', 'superadmin']))
-                        <th class="px-6 py-4 text-left">
-                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" 
-                                   class="w-4 h-4 text-black border-gray-300 rounded focus:ring-black">
-                        </th>
-                        @endif
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
-                        @if(in_array($userRole, ['superadmin', 'sekretaris']))
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
-                        @endif
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Program</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis Pengeluaran</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggaran</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tahun</th>
-                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200" id="programKerjaTableBody">
-                    @forelse($programKerjas as $index => $pk)
-                        <tr class="hover:bg-gray-50 transition" data-jenis="{{ $pk->jenis_pengeluaran }}" data-id="{{ $pk->id }}">
-                            @if(in_array($userRole, ['admin', 'superadmin']))
-                            <td class="px-6 py-4">
-                                <input type="checkbox" name="selected_ids[]" value="{{ $pk->id }}" 
-                                       onchange="updateSelectedCount()"
-                                       class="row-checkbox w-4 h-4 text-black border-gray-300 rounded focus:ring-black">
-                            </td>
-                            @endif
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                {{ $programKerjas->firstItem() + $index }}
-                            </td>
-                            
-                            @if(in_array($userRole, ['superadmin', 'sekretaris']))
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium text-dark">
-                                    {{ $pk->bidang->nama }}
-                                </span>
-                            </td>
-                            @endif
-                            
-                            <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900">{{ $pk->nama }}</div>
-                                <div class="text-xs text-gray-500 mt-1">
-                                    Dibuat: {{ $pk->created_at->format('d M Y H:i') }}
-                                </div>
-                            </td>
-                            
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($pk->jenis_pengeluaran)
-                                    @php
-                                        $jenisBadgeClass = match($pk->jenis_pengeluaran) {
-                                            'Kesekretariatan' => 'bg-blue-100 text-blue-800',
-                                            'Perjalanan Dinas' => 'bg-purple-100 text-purple-800',
-                                            'Aksi' => 'bg-green-100 text-green-800',
-                                            'Dana Sosial', 'Dansos Duka', 'Dansos Banjir', 'Dansos Ekternal' => 'bg-pink-100 text-pink-800',
-                                            'Pendidikan' => 'bg-yellow-100 text-yellow-800',
-                                            'Rapat', 'Rapat GM' => 'bg-gray-100 text-gray-800',
-                                            'COS DPP' => 'bg-indigo-100 text-indigo-800',
-                                            'Iuaran FKJ', 'Iuran GM' => 'bg-orange-100 text-orange-800',
-                                            default => 'bg-gray-100 text-gray-800',
-                                        };
-                                    @endphp
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $jenisBadgeClass }}">
-                                        {{ $pk->jenis_pengeluaran }}
-                                    </span>
-                                @else
-                                    <span class="text-xs text-gray-400">-</span>
-                                @endif
-                            </td>
-                            
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-gray-900">
-                                    Rp {{ number_format($pk->anggaran, 0, ',', '.') }}
-                                </div>
-                            </td>
-                            
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $pk->tanggal ? $pk->tanggal->format('d M Y') : '-' }}
-                            </td>
-                            
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $pk->tahun ?? '-' }}
-                            </td>
-                            
-                            <!-- Aksi - SEMUA TOMBOL TERLIHAT -->
-                            <td class="px-6 py-4">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <!-- Detail Button -->
-                                    <button onclick="openDetailModal({{ $pk->id }})"
-                                        class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
-                                        title="Detail">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                        </svg>
-                                    </button>
-
-                                    <!-- Edit Button -->
-                                    <button onclick="openEditModal({{ $pk->id }})"
-                                            class="bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600 transition"
-                                            title="Edit">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-
-                                    <!-- Delete Button -->
-                                    <button onclick="deleteProgram({{ $pk->id }})"
-                                            class="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition"
-                                            title="Hapus">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="{{ in_array($userRole, ['superadmin', 'sekretaris']) ? '9' : '8' }}" class="px-6 py-16 text-center">
-                                <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                </svg>
-                                <p class="mt-4 text-gray-600 font-semibold">Belum ada program kerja</p>
-                                <p class="text-gray-500 text-sm">Klik "Tambah Program Kerja" untuk membuat</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Footer: Pagination -->
-        @if($programKerjas->hasPages() || $programKerjas->count() > 0)
-            <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div class="text-sm text-gray-600 mb-3 md:mb-0">
-                        @if($perPage === 'all')
-                            Menampilkan <span class="font-semibold">{{ $programKerjas->total() }}</span> data
-                        @else
-                            Menampilkan <span class="font-semibold">{{ $programKerjas->firstItem() }}</span> 
-                            sampai <span class="font-semibold">{{ $programKerjas->lastItem() }}</span> 
-                            dari <span class="font-semibold">{{ $programKerjas->total() }}</span> data
-                        @endif
-                    </div>
-                    
-                    @if($perPage !== 'all')
-                        {{ $programKerjas->links() }}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full" id="programKerjaTable">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    @if(in_array($userRole, ['admin', 'superadmin']))
+                    <th class="px-6 py-4 text-left">
+                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" 
+                               class="w-4 h-4 text-black border-gray-300 rounded focus:ring-black">
+                    </th>
                     @endif
-                </div>
-            </div>
-        @endif
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
+                    @if(in_array($userRole, ['superadmin', 'sekretaris']))
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
+                    @endif
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Program</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis Pengeluaran</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggaran</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th> <!-- ✅ TAMBAH INI -->
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tahun</th>
+                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="programKerjaTableBody">
+                @forelse($programKerjas as $index => $pk)
+                    <tr class="hover:bg-gray-50 transition" data-jenis="{{ $pk->jenis_pengeluaran }}" data-id="{{ $pk->id }}">
+                        @if(in_array($userRole, ['admin', 'superadmin']))
+                        <td class="px-6 py-4">
+                            <input type="checkbox" name="selected_ids[]" value="{{ $pk->id }}" 
+                                   onchange="updateSelectedCount()"
+                                   class="row-checkbox w-4 h-4 text-black border-gray-300 rounded focus:ring-black">
+                        </td>
+                        @endif
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            {{ $programKerjas->firstItem() + $index }}
+                        </td>
+                        
+                        @if(in_array($userRole, ['superadmin', 'sekretaris']))
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium text-dark">
+                                {{ $pk->bidang->nama }}
+                            </span>
+                        </td>
+                        @endif
+                        
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">{{ $pk->nama }}</div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                Dibuat: {{ $pk->created_at->format('d M Y H:i') }}
+                            </div>
+                        </td>
+                        
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($pk->jenis_pengeluaran)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $pk->getJenisPengeluaranBadgeClass() }}">
+                                    {{ $pk->jenis_pengeluaran }}
+                                </span>
+                            @else
+                                <span class="text-xs text-gray-400">-</span>
+                            @endif
+                        </td>
+                        
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-semibold text-gray-900">
+                                Rp {{ number_format($pk->anggaran, 0, ',', '.') }}
+                            </div>
+                        </td>
+                        
+                        <!-- ✅ KOLOM STATUS BARU -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $pk->getStatusBadgeClass() }}">
+                                {{ $pk->status_label }}
+                            </span>
+                        </td>
+                        
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $pk->tanggal ? $pk->tanggal->format('d M Y') : '-' }}
+                        </td>
+                        
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $pk->tahun ?? '-' }}
+                        </td>
+                        
+                        <!-- Aksi -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-center space-x-2">
+                                <!-- Detail Button -->
+                                <button onclick="openDetailModal({{ $pk->id }})"
+                                    class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
+                                    title="Detail">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                </button>
+
+                                <!-- Edit Button -->
+                                <button onclick="openEditModal({{ $pk->id }})"
+                                        class="bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600 transition"
+                                        title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+
+                                <!-- Delete Button -->
+                                <button onclick="deleteProgram({{ $pk->id }})"
+                                        class="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition"
+                                        title="Hapus">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="{{ in_array($userRole, ['superadmin', 'sekretaris']) ? '10' : '9' }}" class="px-6 py-16 text-center">
+                            <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            <p class="mt-4 text-gray-600 font-semibold">Belum ada program kerja</p>
+                            <p class="text-gray-500 text-sm">Klik "Tambah Program Kerja" untuk membuat</p>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
+</div>
 </div>
 
 <!-- Include Modals -->

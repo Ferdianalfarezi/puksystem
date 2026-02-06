@@ -12,7 +12,7 @@
         </div>
 
         <!-- Modal Body -->
-        <form id="createForm" class="p-6 space-y-4">
+        <form id="createForm" class="p-6 space-y-4" enctype="multipart/form-data">
             @csrf
 
             @php
@@ -77,7 +77,7 @@
             <!-- Jenis Pengeluaran -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Jenis Pengeluaran <span class="text-red-500">*</span></label>
-                <select id="createJenisPengeluaran" name="jenis_pengeluaran" required
+                <select id="createJenisPengeluaran" name="jenis_pengeluaran" required onchange="toggleAksiFields()"
                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
                     <option value="">-- Pilih Jenis Pengeluaran --</option>
                     @foreach(\App\Models\PengajuanBudget::JENIS_PENGELUARAN as $jenis)
@@ -85,6 +85,55 @@
                     @endforeach
                 </select>
                 <span class="text-red-500 text-sm error-message" id="error-create-jenis_pengeluaran"></span>
+            </div>
+
+            <!-- ✅ FIELD TAMBAHAN UNTUK AKSI -->
+            <div id="aksiFieldsContainer" class="hidden space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-sm font-semibold text-blue-900 mb-2">📋 Detail Aksi</p>
+                
+                <!-- No Surat -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">No Surat <span class="text-red-500">*</span></label>
+                    <input type="text" id="createNoSurat" name="no_surat"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
+                        placeholder="Contoh: 001/AKSI/2024">
+                    <span class="text-red-500 text-sm error-message" id="error-create-no_surat"></span>
+                </div>
+                
+                <!-- Jumlah Anggota -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Jumlah Anggota <span class="text-red-500">*</span></label>
+                    <input type="number" id="createJumlahAnggota" name="jumlah_anggota" min="1"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
+                        placeholder="Contoh: 50">
+                    <span class="text-red-500 text-sm error-message" id="error-create-jumlah_anggota"></span>
+                </div>
+                
+                <!-- Nama Aksi -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Aksi <span class="text-red-500">*</span></label>
+                    <input type="text" id="createNamaAksi" name="nama_aksi"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
+                        placeholder="Contoh: Demo Tolak Omnibus Law">
+                    <span class="text-red-500 text-sm error-message" id="error-create-nama_aksi"></span>
+                </div>
+                
+                <!-- Tempat Aksi -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tempat Aksi <span class="text-red-500">*</span></label>
+                    <input type="text" id="createTempatAksi" name="tempat_aksi"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition"
+                        placeholder="Contoh: Gedung DPR RI">
+                    <span class="text-red-500 text-sm error-message" id="error-create-tempat_aksi"></span>
+                </div>
+                
+                <!-- Jam Aksi -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Jam Aksi <span class="text-red-500">*</span></label>
+                    <input type="time" id="createJamAksi" name="jam_aksi"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
+                    <span class="text-red-500 text-sm error-message" id="error-create-jam_aksi"></span>
+                </div>
             </div>
 
             <!-- Anggaran -->
@@ -117,7 +166,17 @@
                 <span class="text-red-500 text-xs error-message" id="error-create-tahun"></span>
             </div>
 
-            
+            <!-- ✅ LAMPIRAN PDF -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    Lampiran (PDF)
+                    <span class="text-gray-500 text-xs font-normal ml-1">(Opsional)</span>
+                </label>
+                <input type="file" id="createLampiran" name="lampiran" accept=".pdf"
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800">
+                <p class="mt-1 text-xs text-gray-500">📄 Format: PDF | 📦 Maksimal: 5MB</p>
+                <span class="text-red-500 text-sm error-message" id="error-create-lampiran"></span>
+            </div>
 
             <!-- Info Box -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">

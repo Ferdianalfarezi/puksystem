@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ProgramKerja extends Model
 {
@@ -17,6 +18,7 @@ class ProgramKerja extends Model
         'jenis_pengeluaran',
         'tahun',
         'tanggal',
+        'status', // ✅ Tambahkan ini
     ];
 
     protected $casts = [
@@ -40,10 +42,26 @@ class ProgramKerja extends Model
         'Rapat GM'
     ];
 
-    // Relationships
+    // ✅ Relationships
     public function bidang(): BelongsTo
     {
         return $this->belongsTo(Bidang::class);
+    }
+
+    public function pencairan(): BelongsTo
+    {
+        return $this->belongsTo(Pencairan::class);
+    }
+
+    public function histories(): BelongsTo
+    {
+        return $this->belongsTo(ProgramKerjaHistory::class);
+    }
+
+    // ✅ Relation ke PengajuanBudget (HasOne)
+    public function pengajuanBudget(): HasOne
+    {
+        return $this->hasOne(PengajuanBudget::class);
     }
 
     // Scopes
@@ -62,7 +80,39 @@ class ProgramKerja extends Model
         return $query->where('tahun', $tahun);
     }
 
-    // Helper method untuk badge warna
+    public function scopeByStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    // ✅ Helper methods untuk status
+    public function getStatusBadgeClass(): string
+    {
+        return match($this->status) {
+            'draft' => 'bg-gray-100 text-gray-800',
+            'menunggu_konfirmasi_bendahara' => 'bg-yellow-100 text-yellow-800',
+            'menunggu_approval_ketua' => 'bg-blue-100 text-blue-800',
+            'menunggu_pencairan' => 'bg-purple-100 text-purple-800',
+            'dicairkan' => 'bg-green-100 text-green-800',
+            'ditolak_bendahara', 'ditolak_ketua' => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match($this->status) {
+            'draft' => 'Dalam Proses',
+            'menunggu_konfirmasi_bendahara' => 'Menunggu Bendahara',
+            'menunggu_approval_ketua' => 'Menunggu Ketua',
+            'menunggu_pencairan' => 'Menunggu Pencairan',
+            'dicairkan' => 'Dicairkan',
+            'ditolak_bendahara' => 'Ditolak Bendahara',
+            'ditolak_ketua' => 'Ditolak Ketua',
+            default => ucfirst(str_replace('_', ' ', $this->status)),
+        };
+    }
+
     public function getJenisPengeluaranBadgeClass(): string
     {
         return match($this->jenis_pengeluaran) {
@@ -78,13 +128,11 @@ class ProgramKerja extends Model
         };
     }
 
-    // Format angka
     public function getAnggaranFormattedAttribute(): string
     {
         return 'Rp ' . number_format($this->anggaran, 0, ',', '.');
     }
 
-    // Format tanggal
     public function getTanggalFormattedAttribute(): string
     {
         return $this->tanggal ? $this->tanggal->format('d M Y') : '-';

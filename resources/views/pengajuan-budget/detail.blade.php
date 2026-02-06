@@ -47,6 +47,11 @@ async function openDetailModal(id) {
     
     try {
         const response = await fetch(`/pengajuan-budget/${id}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         if (data.success) {
@@ -73,8 +78,14 @@ async function openDetailModal(id) {
                 'ditolak_ketua': 'Ditolak Ketua'
             };
 
-            // Jenis pengeluaran badge
+            // Jenis badge
             const jenisBadgeClasses = {
+                'program_kerja': 'bg-indigo-100 text-indigo-800',
+                'pengajuan_budget': 'bg-cyan-100 text-cyan-800'
+            };
+
+            // Jenis pengeluaran badge
+            const jenisBadgeClass = {
                 'Kesekretariatan': 'bg-blue-100 text-blue-800',
                 'Perjalanan Dinas': 'bg-purple-100 text-purple-800',
                 'Aksi': 'bg-green-100 text-green-800',
@@ -97,6 +108,13 @@ async function openDetailModal(id) {
                         <div class="flex-1">
                             <h3 class="text-lg font-bold text-gray-900">${pb.nama}</h3>
                             <p class="text-sm text-gray-600 mt-1">${pb.bidang.nama}</p>
+                            ${pb.program_kerja ? `
+                                <div class="mt-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${jenisBadgeClasses[pb.jenis] || 'bg-gray-100 text-gray-800'}">
+                                        ${pb.jenis_label} - ${pb.program_kerja.nama}
+                                    </span>
+                                </div>
+                            ` : ''}
                         </div>
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusBadgeClasses[pb.status] || 'bg-gray-100 text-gray-800'}">
                             ${statusLabels[pb.status] || pb.status}
@@ -117,12 +135,58 @@ async function openDetailModal(id) {
                     ${pb.jenis_pengeluaran ? `
                     <div class="pt-3 border-t border-gray-200">
                         <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">Jenis Pengeluaran</p>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${jenisBadgeClasses[pb.jenis_pengeluaran] || 'bg-gray-100 text-gray-800'}">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${jenisBadgeClass[pb.jenis_pengeluaran] || 'bg-gray-100 text-gray-800'}">
                             ${pb.jenis_pengeluaran}
                         </span>
                     </div>
                     ` : ''}
                 </div>
+
+                <!-- ✅ DETAIL AKSI (jika jenis pengeluaran = Aksi) -->
+                ${pb.jenis_pengeluaran === 'Aksi' && (pb.no_surat || pb.jumlah_anggota || pb.nama_aksi) ? `
+                <div class="border border-green-200 rounded-lg p-4 bg-green-50">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <h4 class="text-sm font-bold text-green-900">Detail Aksi</h4>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        ${pb.no_surat ? `<p class="text-green-800"><strong>No Surat:</strong> ${pb.no_surat}</p>` : ''}
+                        ${pb.jumlah_anggota ? `<p class="text-green-800"><strong>Jumlah Anggota:</strong> ${pb.jumlah_anggota} orang</p>` : ''}
+                        ${pb.nama_aksi ? `<p class="text-green-800"><strong>Nama Aksi:</strong> ${pb.nama_aksi}</p>` : ''}
+                        ${pb.tempat_aksi ? `<p class="text-green-800"><strong>Tempat:</strong> ${pb.tempat_aksi}</p>` : ''}
+                        ${pb.jam_aksi ? `<p class="text-green-800"><strong>Jam:</strong> ${pb.jam_aksi}</p>` : ''}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- ✅ LAMPIRAN PDF -->
+                ${pb.lampiran_url ? `
+                <div class="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-red-100 p-2 rounded-lg">
+                                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-blue-900">Lampiran PDF</p>
+                                <p class="text-xs text-blue-700">${pb.lampiran_filename || 'dokumen.pdf'}</p>
+                            </div>
+                        </div>
+                        <a href="${pb.lampiran_url}" target="_blank" 
+                           class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            <span>Lihat</span>
+                        </a>
+                    </div>
+                </div>
+                ` : ''}
 
                 <!-- Tanggal & Pengajuan -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -201,6 +265,8 @@ async function openDetailModal(id) {
             `;
             
             content.innerHTML = html;
+        } else {
+            throw new Error(data.message || 'Gagal memuat data');
         }
     } catch (error) {
         console.error('Error:', error);
@@ -209,7 +275,8 @@ async function openDetailModal(id) {
                 <svg class="w-16 h-16 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <p class="mt-4 text-gray-600">Gagal memuat detail pengajuan budget</p>
+                <p class="mt-4 text-gray-600 font-semibold">Gagal memuat detail pengajuan budget</p>
+                <p class="text-sm text-gray-500 mt-2">${error.message}</p>
             </div>
         `;
     }
@@ -224,4 +291,11 @@ function closeDetailModal() {
         document.body.style.overflow = '';
     }, 250);
 }
+
+// Close on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDetailModal();
+    }
+});
 </script>

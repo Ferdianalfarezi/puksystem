@@ -18,8 +18,8 @@ use App\Http\Controllers\PengajuanHutangController;
 use App\Http\Controllers\BendaharaHutangController;
 use App\Http\Controllers\KetuaHutangController;
 use App\Http\Controllers\PembayaranHutangController;
-use App\Http\Controllers\EventController; // ✅ TAMBAHKAN
-use App\Http\Controllers\EventAttendanceController; // ✅ TAMBAHKAN
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventAttendanceController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -57,7 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::post('pengajuan-budget/{pengajuanBudget}/submit', [PengajuanBudgetController::class, 'submit'])
         ->name('pengajuan-budget.submit');
 
-    // Route untuk Pengajuan Hutang (Superadmin & Admin Bidang 4)
+    // Route untuk Pengajuan Hutang
     Route::resource('pengajuan-hutang', PengajuanHutangController::class);
     Route::post('pengajuan-hutang/{pengajuanHutang}/submit', [PengajuanHutangController::class, 'submit'])
         ->name('pengajuan-hutang.submit');
@@ -66,10 +66,10 @@ Route::middleware('auth')->group(function () {
     Route::get('list-hutang', [PengajuanHutangController::class, 'listHutangAktif'])->name('list-hutang');
     Route::post('list-hutang/{pengajuanHutang}/bayar', [PembayaranHutangController::class, 'bayar'])->name('hutang.bayar');
 
-    // ✅ TAMBAHKAN: Route untuk Events Management
+    // Route untuk Events Management
     Route::resource('events', EventController::class);
     
-    // ✅ TAMBAHKAN: Route untuk Event Attendance (Daftar Hadir)
+    // Route untuk Event Attendance (Daftar Hadir)
     Route::prefix('events/{event}')->name('events.attendance.')->group(function () {
         Route::get('/attendance', [EventAttendanceController::class, 'index'])->name('index');
         Route::post('/scan', [EventAttendanceController::class, 'scan'])->name('scan');
@@ -77,10 +77,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/export', [EventAttendanceController::class, 'export'])->name('export');
     });
 
-    // Route untuk Bendahara
+    // ========================================
+    // ROUTE BENDAHARA - SEMUA PAKE PREFIX JELAS
+    // ========================================
     Route::prefix('bendahara')->name('bendahara.')->group(function () {
         
-        // PENGAJUAN BUDGET - HARUS DI ATAS!
+        // PENGAJUAN BUDGET
         Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
             Route::get('/', [BendaharaPengajuanController::class, 'index'])->name('index');
             Route::get('/{pengajuanBudget}', [BendaharaPengajuanController::class, 'show'])->name('show');
@@ -96,17 +98,21 @@ Route::middleware('auth')->group(function () {
             Route::post('/{pengajuanHutang}/reject', [BendaharaHutangController::class, 'reject'])->name('reject');
         });
         
-        // PROGRAM KERJA - DI BAWAH
-        Route::get('/', [BendaharaController::class, 'index'])->name('index');
-        Route::get('/{programKerja}', [BendaharaController::class, 'show'])->name('show');
-        Route::post('/{programKerja}/approve', [BendaharaController::class, 'approve'])->name('approve');
-        Route::post('/{programKerja}/reject', [BendaharaController::class, 'reject'])->name('reject');
+        // PROGRAM KERJA (Review)
+        Route::prefix('proker')->name('proker.')->group(function () {
+            Route::get('/', [BendaharaController::class, 'index'])->name('index');
+            Route::get('/{programKerja}', [BendaharaController::class, 'show'])->name('show');
+            Route::post('/{programKerja}/approve', [BendaharaController::class, 'approve'])->name('approve');
+            Route::post('/{programKerja}/reject', [BendaharaController::class, 'reject'])->name('reject');
+        });
     });
     
-    // Route untuk Ketua
+    // ========================================
+    // ROUTE KETUA - SEMUA PAKE PREFIX JELAS
+    // ========================================
     Route::prefix('ketua')->name('ketua.')->group(function () {
         
-        // PENGAJUAN BUDGET - HARUS DI ATAS!
+        // PENGAJUAN BUDGET
         Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
             Route::get('/', [KetuaPengajuanController::class, 'index'])->name('index');
             Route::get('/{pengajuanBudget}', [KetuaPengajuanController::class, 'show'])->name('show');
@@ -122,14 +128,16 @@ Route::middleware('auth')->group(function () {
             Route::post('/{pengajuanHutang}/reject', [KetuaHutangController::class, 'reject'])->name('reject');
         });
         
-        // PROGRAM KERJA - DI BAWAH
-        Route::get('/', [KetuaController::class, 'index'])->name('index');
-        Route::get('/{programKerja}', [KetuaController::class, 'show'])->name('show');
-        Route::post('/{programKerja}/approve', [KetuaController::class, 'approve'])->name('approve');
-        Route::post('/{programKerja}/reject', [KetuaController::class, 'reject'])->name('reject');
+        // PROGRAM KERJA (Review)
+        Route::prefix('proker')->name('proker.')->group(function () {
+            Route::get('/', [KetuaController::class, 'index'])->name('index');
+            Route::get('/{programKerja}', [KetuaController::class, 'show'])->name('show');
+            Route::post('/{programKerja}/approve', [KetuaController::class, 'approve'])->name('approve');
+            Route::post('/{programKerja}/reject', [KetuaController::class, 'reject'])->name('reject');
+        });
     });
     
-    // Route untuk Pencairan (Bendahara) - GABUNGAN Program Kerja + Pengajuan Budget + Hutang
+    // Route untuk Pencairan (Bendahara)
     Route::prefix('pencairan')->name('pencairan.')->group(function () {
         Route::get('/', [PencairanController::class, 'index'])->name('index');
         Route::post('/{type}/{id}/cairkan', [PencairanController::class, 'cairkan'])->name('cairkan');
@@ -143,7 +151,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/pengajuan-budget', [HistoryPengajuanController::class, 'index'])->name('pengajuan-budget');
         Route::get('/pengajuan-budget/{pengajuanBudget}', [HistoryPengajuanController::class, 'show'])->name('pengajuan-budget.show');
         
-        // Route untuk History Hutang Lunas
         Route::get('/hutang', [HistoryController::class, 'hutang'])->name('hutang');
     });
 

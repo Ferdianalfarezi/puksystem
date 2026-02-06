@@ -30,6 +30,13 @@ class PengajuanBudget extends Model
         'reviewed_by_ketua',
         'reviewed_at_ketua',
         'catatan_ketua',
+        'no_surat',
+        'jumlah_anggota',
+        'nama_aksi',
+        'tempat_aksi',
+        'jam_aksi',
+        'lampiran',
+        
     ];
 
     protected $casts = [
@@ -38,6 +45,7 @@ class PengajuanBudget extends Model
         'reviewed_at_bendahara' => 'datetime',
         'reviewed_at_ketua' => 'datetime',
         'tanggal' => 'date',
+        'jam_aksi' => 'datetime:H:i', 
     ];
 
     // ✅ Konstanta untuk jenis
@@ -196,7 +204,7 @@ class PengajuanBudget extends Model
     public function getStatusLabelAttribute(): string
     {
         return match($this->status) {
-            'draft' => 'Draft',
+            'draft' => 'Dalam Proses',
             'menunggu_konfirmasi_bendahara' => 'Menunggu Bendahara',
             'menunggu_approval_ketua' => 'Menunggu Ketua',
             'menunggu_pencairan' => 'Menunggu Pencairan',

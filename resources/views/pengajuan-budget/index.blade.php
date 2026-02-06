@@ -817,5 +817,69 @@
         }
     }
     @endif
+
+    // Toggle Aksi Fields
+    function toggleAksiFields() {
+        const jenisPengeluaran = document.getElementById('createJenisPengeluaran').value;
+        const aksiContainer = document.getElementById('aksiFieldsContainer');
+        const aksiInputs = aksiContainer.querySelectorAll('input');
+        
+        if (jenisPengeluaran === 'Aksi') {
+            aksiContainer.classList.remove('hidden');
+            // Set required untuk field aksi
+            aksiInputs.forEach(input => {
+                input.setAttribute('required', 'required');
+            });
+        } else {
+            aksiContainer.classList.add('hidden');
+            // Remove required dan clear value
+            aksiInputs.forEach(input => {
+                input.removeAttribute('required');
+                input.value = '';
+            });
+        }
+    }
+
+    // Panggil saat page load untuk handle jika ada error validation
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleAksiFields();
+    });
+
+    // Handle file upload preview
+document.getElementById('createLampiran').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    
+    if (file) {
+        // Check file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            Swal.fire('Error!', 'Ukuran file maksimal 5MB!', 'error');
+            e.target.value = '';
+            filePreview.classList.add('hidden');
+            return;
+        }
+        
+        // Check file type
+        if (file.type !== 'application/pdf') {
+            Swal.fire('Error!', 'File harus berformat PDF!', 'error');
+            e.target.value = '';
+            filePreview.classList.add('hidden');
+            return;
+        }
+        
+        fileName.textContent = file.name;
+        filePreview.classList.remove('hidden');
+    } else {
+        filePreview.classList.add('hidden');
+    }
+});
+
+function clearFile() {
+    document.getElementById('createLampiran').value = '';
+    document.getElementById('filePreview').classList.add('hidden');
+}
+
+
 </script>
 @endpush

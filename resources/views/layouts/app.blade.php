@@ -568,12 +568,7 @@
                                 <!-- Submenu Bendahara -->
                                 <div x-show="open" x-collapse class="ml-6 mt-1 space-y-1">
 
-                                    <a href="{{ route('bendahara.index') }}"
-                                    class="flex items-center px-3 py-2 text-sm rounded-lg
-                                            hover:bg-gray-100 text-gray-600 transition
-                                            {{ request()->routeIs('bendahara.index') || request()->routeIs('bendahara.show') || (request()->routeIs('bendahara.*') && !request()->routeIs('bendahara.pengajuan.*') && !request()->routeIs('bendahara.hutang.*')) ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
-                                        Program Kerja
-                                    </a>
+                                    
 
                                     <a href="{{ route('bendahara.pengajuan.index') }}"
                                     class="flex items-center px-3 py-2 text-sm rounded-lg
@@ -617,15 +612,7 @@
                                 </button>
 
                                 <!-- Submenu Ketua -->
-                                <div x-show="open" x-collapse class="ml-6 mt-1 space-y-1">
-
-                                    <a href="{{ route('ketua.index') }}"
-                                    class="flex items-center px-3 py-2 text-sm rounded-lg
-                                            hover:bg-gray-100 text-gray-600 transition
-                                            {{ request()->routeIs('ketua.index') || request()->routeIs('ketua.show') || (request()->routeIs('ketua.*') && !request()->routeIs('ketua.pengajuan.*') && !request()->routeIs('ketua.hutang.*')) ? 'bg-gray-100 text-gray-900 font-semibold' : '' }}">
-                                        Program Kerja
-                                    </a>
-
+                                <div x-show="open" x-collapse class="ml-6 mt-1 space-y-1">                    
                                     <a href="{{ route('ketua.pengajuan.index') }}"
                                     class="flex items-center px-3 py-2 text-sm rounded-lg
                                             hover:bg-gray-100 text-gray-600 transition
