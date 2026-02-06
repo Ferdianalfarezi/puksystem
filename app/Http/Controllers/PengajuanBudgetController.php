@@ -17,6 +17,9 @@ class PengajuanBudgetController extends Controller
         
         $allBidangs = \App\Models\Bidang::orderBy('nama')->get();
         
+        // Ambil semua program kerja untuk dropdown
+        $allProgramKerjas = \App\Models\ProgramKerja::with('bidang')->orderBy('nama')->get();
+        
         $perPage = $request->get('perPage', 20);
         
         if (in_array($userRole, ['superadmin', 'sekretaris'])) {
@@ -55,6 +58,7 @@ class PengajuanBudgetController extends Controller
                 'bidangs', 
                 'selectedBidangId', 
                 'allBidangs',
+                'allProgramKerjas',
                 'perPage'
             ));
             
@@ -88,6 +92,7 @@ class PengajuanBudgetController extends Controller
                 'bidangs', 
                 'selectedBidangId', 
                 'allBidangs',
+                'allProgramKerjas',
                 'perPage'
             ));
         }
@@ -99,62 +104,104 @@ class PengajuanBudgetController extends Controller
     }
 
     public function store(Request $request)
-    {
+{
+    try {
         $user = Auth::user();
         $userRole = $user->role->nama ?? '';
         
-        $validated = $request->validate([
+        // Validasi bidang_id untuk user selain superadmin
+        if ($userRole !== 'superadmin' && !$user->bidang_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User tidak memiliki bidang yang terdaftar.'
+            ], 400);
+        }
+        
+        $rules = [
+            'jenis' => 'required|in:' . implode(',', array_keys(PengajuanBudget::JENIS)),
+            'program_kerja_id' => 'nullable|required_if:jenis,program_kerja|exists:program_kerjas,id',
             'nama' => 'required|string|max:255',
             'anggaran' => 'required|numeric|min:0',
             'jenis_pengeluaran' => 'required|in:' . implode(',', PengajuanBudget::JENIS_PENGELUARAN),
             'tahun' => 'required|digits:4|integer|min:2000|max:2100',
-            'tanggal' => 'required|date',
-            'bidang_id' => $userRole === 'superadmin' ? 'required|exists:bidangs,id' : 'nullable',
-        ]);
+            // HAPUS validasi tanggal
+        ];
+        
+        if ($userRole === 'superadmin') {
+            $rules['bidang_id'] = 'required|exists:bidangs,id';
+        }
+        
+        $validated = $request->validate($rules);
 
+        // Set program_kerja_id to null if jenis is not program_kerja
+        if ($validated['jenis'] !== 'program_kerja') {
+            $validated['program_kerja_id'] = null;
+        }
+
+        // Set bidang_id
         if ($userRole === 'superadmin') {
             $validated['bidang_id'] = $request->bidang_id;
         } else {
             $validated['bidang_id'] = $user->bidang_id;
         }
         
+        // AUTO SET TANGGAL ke hari ini
+        $validated['tanggal'] = now()->toDateString(); // Format: Y-m-d
         $validated['status'] = 'draft';
 
         DB::beginTransaction();
-        try {
-            $pengajuanBudget = PengajuanBudget::create($validated);
+        
+        $pengajuanBudget = PengajuanBudget::create($validated);
 
-            PengajuanBudgetHistory::create([
-                'pengajuan_budget_id' => $pengajuanBudget->id,
-                'tanggal_pengajuan' => $pengajuanBudget->tanggal,
-                'status_dari' => null,
-                'status_ke' => 'draft',
-                'catatan' => 'Pengajuan budget dibuat',
-                'dilakukan_oleh' => Auth::id(),
-                'dilakukan_pada' => now(),
-                'data_snapshot' => [
-                    'nama' => $pengajuanBudget->nama,
-                    'anggaran' => $pengajuanBudget->anggaran,
-                    'bidang' => $pengajuanBudget->bidang->nama,
-                    'tahun' => $pengajuanBudget->tahun,
-                    'tanggal' => $pengajuanBudget->tanggal->format('Y-m-d'),
-                ],
-            ]);
+        PengajuanBudgetHistory::create([
+            'pengajuan_budget_id' => $pengajuanBudget->id,
+            'tanggal_pengajuan' => $pengajuanBudget->tanggal,
+            'status_dari' => null,
+            'status_ke' => 'draft',
+            'catatan' => 'Pengajuan budget dibuat',
+            'dilakukan_oleh' => Auth::id(),
+            'dilakukan_pada' => now(),
+            'data_snapshot' => [
+                'nama' => $pengajuanBudget->nama,
+                'jenis' => $pengajuanBudget->jenis,
+                'anggaran' => $pengajuanBudget->anggaran,
+                'bidang' => $pengajuanBudget->bidang->nama ?? '-',
+                'tahun' => $pengajuanBudget->tahun,
+                'tanggal' => is_string($pengajuanBudget->tanggal) 
+                    ? $pengajuanBudget->tanggal 
+                    : $pengajuanBudget->tanggal->format('Y-m-d'),
+            ],
+        ]);
 
-            DB::commit();
+        DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pengajuan budget berhasil dibuat dengan status draft.'
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengajuan budget berhasil dibuat dengan status draft.'
+        ]);
+        
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validasi gagal',
+            'errors' => $e->errors()
+        ], 422);
+        
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        \Log::error('Error creating pengajuan budget: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString(),
+            'request' => $request->all()
+        ]);
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            'error_detail' => config('app.debug') ? $e->getTraceAsString() : null
+        ], 500);
     }
+}
 
     public function show(PengajuanBudget $pengajuanBudget)
     {
@@ -178,7 +225,8 @@ class PengajuanBudgetController extends Controller
             'submittedBy', 
             'reviewedByBendahara', 
             'reviewedByKetua', 
-            'pencairan.dicairkanOleh'
+            'pencairan.dicairkanOleh',
+            'programKerja'
         ]);
 
         if (request()->ajax()) {
@@ -187,6 +235,13 @@ class PengajuanBudgetController extends Controller
                 'data' => [
                     'id' => $pengajuanBudget->id,
                     'nama' => $pengajuanBudget->nama,
+                    'jenis' => $pengajuanBudget->jenis,
+                    'jenis_label' => $pengajuanBudget->jenis_label,
+                    'program_kerja_id' => $pengajuanBudget->program_kerja_id,
+                    'program_kerja' => $pengajuanBudget->programKerja ? [
+                        'id' => $pengajuanBudget->programKerja->id,
+                        'nama' => $pengajuanBudget->programKerja->nama,
+                    ] : null,
                     'anggaran' => $pengajuanBudget->anggaran,
                     'tahun' => $pengajuanBudget->tahun,
                     'tanggal' => $pengajuanBudget->tanggal,
@@ -287,6 +342,8 @@ class PengajuanBudgetController extends Controller
         }
 
         $validated = $request->validate([
+            'jenis' => 'required|in:' . implode(',', array_keys(PengajuanBudget::JENIS)),
+            'program_kerja_id' => 'nullable|required_if:jenis,program_kerja|exists:program_kerjas,id',
             'nama' => 'required|string|max:255',
             'anggaran' => 'required|numeric|min:0',
             'jenis_pengeluaran' => 'required|in:' . implode(',', PengajuanBudget::JENIS_PENGELUARAN),
@@ -294,6 +351,11 @@ class PengajuanBudgetController extends Controller
             'tanggal' => 'required|date',
             'bidang_id' => $userRole === 'superadmin' ? 'required|exists:bidangs,id' : 'nullable',
         ]);
+
+        // Set program_kerja_id to null if jenis is not program_kerja
+        if ($validated['jenis'] !== 'program_kerja') {
+            $validated['program_kerja_id'] = null;
+        }
 
         if ($userRole === 'superadmin') {
             $validated['bidang_id'] = $request->bidang_id;
@@ -303,6 +365,7 @@ class PengajuanBudgetController extends Controller
         try {
             $dataLama = [
                 'nama' => $pengajuanBudget->nama,
+                'jenis' => $pengajuanBudget->jenis,
                 'anggaran' => $pengajuanBudget->anggaran,
                 'bidang' => $pengajuanBudget->bidang->nama,
                 'tahun' => $pengajuanBudget->tahun,
@@ -324,6 +387,7 @@ class PengajuanBudgetController extends Controller
                     'data_lama' => $dataLama,
                     'data_baru' => [
                         'nama' => $pengajuanBudget->nama,
+                        'jenis' => $pengajuanBudget->jenis,
                         'anggaran' => $pengajuanBudget->anggaran,
                         'bidang' => $pengajuanBudget->bidang->nama,
                         'tahun' => $pengajuanBudget->tahun,
@@ -372,6 +436,7 @@ class PengajuanBudgetController extends Controller
         try {
             $dataPengajuanBudget = [
                 'nama' => $pengajuanBudget->nama,
+                'jenis' => $pengajuanBudget->jenis,
                 'anggaran' => $pengajuanBudget->anggaran,
                 'bidang' => $pengajuanBudget->bidang->nama,
                 'tahun' => $pengajuanBudget->tahun,
@@ -449,6 +514,7 @@ class PengajuanBudgetController extends Controller
                 'dilakukan_pada' => now(),
                 'data_snapshot' => [
                     'nama' => $pengajuanBudget->nama,
+                    'jenis' => $pengajuanBudget->jenis,
                     'anggaran' => $pengajuanBudget->anggaran,
                     'bidang' => $pengajuanBudget->bidang->nama,
                     'tahun' => $pengajuanBudget->tahun,

@@ -14,6 +14,8 @@ class PengajuanBudget extends Model
 
     protected $fillable = [
         'bidang_id',
+        'jenis',
+        'program_kerja_id',
         'nama',
         'anggaran',
         'jenis_pengeluaran',
@@ -38,6 +40,12 @@ class PengajuanBudget extends Model
         'tanggal' => 'date',
     ];
 
+    // ✅ Konstanta untuk jenis
+    public const JENIS = [
+        'program_kerja' => 'Program Kerja',
+        'pengajuan_budget' => 'Pengajuan Budget',
+    ];
+
     // ✅ Konstanta untuk jenis pengeluaran (SAMA dengan ProgramKerja)
     public const JENIS_PENGELUARAN = [
         'Kesekretariatan',
@@ -59,6 +67,11 @@ class PengajuanBudget extends Model
     public function bidang(): BelongsTo
     {
         return $this->belongsTo(Bidang::class);
+    }
+
+    public function programKerja(): BelongsTo
+    {
+        return $this->belongsTo(ProgramKerja::class);
     }
 
     public function submittedBy(): BelongsTo
@@ -95,6 +108,11 @@ class PengajuanBudget extends Model
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);
+    }
+
+    public function scopeByJenis($query, $jenis)
+    {
+        return $query->where('jenis', $jenis);
     }
 
     public function scopeByJenisPengeluaran($query, $jenis)
@@ -146,6 +164,20 @@ class PengajuanBudget extends Model
     public function isRejected(): bool
     {
         return in_array($this->status, ['ditolak_bendahara', 'ditolak_ketua']);
+    }
+
+    public function getJenisLabelAttribute(): string
+    {
+        return self::JENIS[$this->jenis] ?? ucfirst(str_replace('_', ' ', $this->jenis));
+    }
+
+    public function getJenisBadgeClass(): string
+    {
+        return match($this->jenis) {
+            'program_kerja' => 'bg-indigo-100 text-indigo-800',
+            'pengajuan_budget' => 'bg-cyan-100 text-cyan-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
     }
 
     public function getStatusBadgeClass(): string

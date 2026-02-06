@@ -144,6 +144,15 @@
                 >
             </div>
 
+            <!-- Filter Jenis -->
+            <div class="w-full md:w-auto">
+                <select id="filterJenis" onchange="filterByJenis()" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
+                    <option value="">Semua Jenis</option>
+                    <option value="program_kerja">Program Kerja</option>
+                    <option value="pengajuan_budget">Pengajuan Budget</option>
+                </select>
+            </div>
+
             <div class="w-full md:w-auto">
                 <select id="filterStatus" onchange="filterByStatus()" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
                     <option value="">Semua Status</option>
@@ -178,6 +187,7 @@
                         @if(in_array($userRole, ['superadmin', 'sekretaris']))
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
                         @endif
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Pengajuan</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis Pengeluaran</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggaran</th>
@@ -188,7 +198,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200" id="pengajuanBudgetTableBody">
                     @forelse($pengajuanBudgets as $index => $pb)
-                        <tr class="hover:bg-gray-50 transition" data-status="{{ $pb->status }}">
+                        <tr class="hover:bg-gray-50 transition" data-status="{{ $pb->status }}" data-jenis="{{ $pb->jenis }}">
                             <td class="px-6 py-4 text-sm text-gray-900">
                                 {{ $pengajuanBudgets->firstItem() + $index }}
                             </td>
@@ -200,6 +210,12 @@
                                 </span>
                             </td>
                             @endif
+
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $pb->getJenisBadgeClass() }}">
+                                    {{ $pb->jenis_label }}
+                                </span>
+                            </td>
                             
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">{{ $pb->nama }}</div>
@@ -277,7 +293,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ in_array($userRole, ['superadmin', 'sekretaris']) ? '8' : '7' }}" class="px-6 py-16 text-center">
+                            <td colspan="{{ in_array($userRole, ['superadmin', 'sekretaris']) ? '9' : '8' }}" class="px-6 py-16 text-center">
                                 <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
@@ -374,6 +390,23 @@
         }
     }
 
+    function filterByJenis() {
+        const filterValue = document.getElementById('filterJenis').value.toLowerCase();
+        const tableBody = document.getElementById('pengajuanBudgetTableBody');
+        const rows = tableBody.getElementsByTagName('tr');
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const jenis = row.getAttribute('data-jenis');
+
+            if (filterValue === '' || jenis === filterValue) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    }
+
     function filterByStatus() {
         const filterValue = document.getElementById('filterStatus').value.toLowerCase();
         const tableBody = document.getElementById('pengajuanBudgetTableBody');
@@ -413,6 +446,7 @@
             if (data.success) {
                 const pb = data.data;
                 document.getElementById('editPengajuanId').value = pb.id;
+                document.getElementById('editJenis').value = pb.jenis;
                 document.getElementById('editNama').value = pb.nama;
                 document.getElementById('editAnggaran').value = pb.anggaran;
                 document.getElementById('editJenisPengeluaran').value = pb.jenis_pengeluaran;
@@ -422,6 +456,26 @@
                 const editBidangId = document.getElementById('editBidangId');
                 if (editBidangId) {
                     editBidangId.value = pb.bidang_id;
+                }
+                
+                // Handle program kerja dropdown
+                const wrapper = document.getElementById('editProgramKerjaWrapper');
+                const programKerjaSelect = document.getElementById('editProgramKerjaId');
+                
+                if (pb.jenis === 'program_kerja') {
+                    wrapper.classList.remove('hidden');
+                    programKerjaSelect.setAttribute('required', 'required');
+                    
+                    // Update dropdown dengan data yang sudah ada
+                    @if($userRole === 'superadmin')
+                        updateProgramKerjaDropdown('edit', pb.bidang_id, pb.program_kerja_id);
+                    @else
+                        updateProgramKerjaDropdown('edit', {{ Auth::user()->bidang_id ?? 'null' }}, pb.program_kerja_id);
+                    @endif
+                } else {
+                    wrapper.classList.add('hidden');
+                    programKerjaSelect.removeAttribute('required');
+                    programKerjaSelect.value = '';
                 }
                 
                 clearErrors();
@@ -649,6 +703,119 @@
             closeEditModal();
         }
     });
+
+    // ========================================
+    // Program Kerja Dropdown Functions
+    // ========================================
+    
+    // Data program kerja dari controller
+    const allProgramKerjas = @json($allProgramKerjas);
+
+    // Filter program kerja berdasarkan bidang (atau semua jika superadmin)
+    function getProgramKerjaByBidang(bidangId) {
+        @if($userRole === 'superadmin')
+            // Superadmin: jika tidak pilih bidang, tampilkan semua
+            if (!bidangId) {
+                return allProgramKerjas;
+            }
+            return allProgramKerjas.filter(pk => pk.bidang_id == bidangId);
+        @else
+            // Non-superadmin: filter by bidang
+            if (!bidangId) return [];
+            return allProgramKerjas.filter(pk => pk.bidang_id == bidangId);
+        @endif
+    }
+
+    // Update dropdown program kerja
+    function updateProgramKerjaDropdown(mode = 'create', bidangId = null, selectedId = null) {
+        const select = document.getElementById(`${mode}ProgramKerjaId`);
+        select.innerHTML = '<option value="">-- Pilih Program Kerja --</option>';
+        
+        const filteredData = getProgramKerjaByBidang(bidangId);
+        
+        filteredData.forEach(pk => {
+            const option = document.createElement('option');
+            option.value = pk.id;
+            // Tampilkan nama bidang juga untuk superadmin
+            @if($userRole === 'superadmin')
+                const bidangNama = pk.bidang ? pk.bidang.nama : '';
+                option.textContent = `[${bidangNama}] ${pk.nama} - Rp ${Number(pk.anggaran).toLocaleString('id-ID')}`;
+            @else
+                option.textContent = `${pk.nama} - Rp ${Number(pk.anggaran).toLocaleString('id-ID')}`;
+            @endif
+            option.dataset.nama = pk.nama;
+            option.dataset.anggaran = pk.anggaran;
+            option.dataset.jenisPengeluaran = pk.jenis_pengeluaran;
+            option.dataset.tahun = pk.tahun;
+            option.dataset.tanggal = pk.tanggal;
+            option.dataset.bidangId = pk.bidang_id;
+            
+            if (selectedId && pk.id == selectedId) {
+                option.selected = true;
+            }
+            
+            select.appendChild(option);
+        });
+    }
+
+    // Handle perubahan bidang (untuk superadmin)
+    function onBidangChange(mode = 'create') {
+        const bidangId = document.getElementById(`${mode}BidangId`).value;
+        const jenis = document.getElementById(`${mode}Jenis`).value;
+        
+        if (jenis === 'program_kerja') {
+            updateProgramKerjaDropdown(mode, bidangId);
+        }
+    }
+
+    // Handle perubahan jenis
+    function onJenisChange(mode = 'create') {
+        const jenis = document.getElementById(`${mode}Jenis`).value;
+        const wrapper = document.getElementById(`${mode}ProgramKerjaWrapper`);
+        const programKerjaSelect = document.getElementById(`${mode}ProgramKerjaId`);
+        
+        if (jenis === 'program_kerja') {
+            wrapper.classList.remove('hidden');
+            programKerjaSelect.setAttribute('required', 'required');
+            
+            // Get bidang id
+            @if($userRole === 'superadmin')
+                const bidangIdEl = document.getElementById(`${mode}BidangId`);
+                const bidangId = bidangIdEl ? bidangIdEl.value : null;
+            @else
+                const bidangId = {{ Auth::user()->bidang_id ?? 'null' }};
+            @endif
+            
+            updateProgramKerjaDropdown(mode, bidangId);
+        } else {
+            wrapper.classList.add('hidden');
+            programKerjaSelect.removeAttribute('required');
+            programKerjaSelect.value = '';
+        }
+    }
+
+    // Handle perubahan program kerja - auto fill form
+    function onProgramKerjaChange(mode = 'create') {
+        const select = document.getElementById(`${mode}ProgramKerjaId`);
+        const selectedOption = select.options[select.selectedIndex];
+        
+        if (selectedOption && selectedOption.value) {
+            // Auto fill form fields
+            document.getElementById(`${mode}Nama`).value = selectedOption.dataset.nama || '';
+            document.getElementById(`${mode}Anggaran`).value = selectedOption.dataset.anggaran || '';
+            document.getElementById(`${mode}JenisPengeluaran`).value = selectedOption.dataset.jenisPengeluaran || '';
+            document.getElementById(`${mode}Tahun`).value = selectedOption.dataset.tahun || '';
+            document.getElementById(`${mode}Tanggal`).value = selectedOption.dataset.tanggal || '';
+            
+            // Auto fill bidang juga untuk superadmin
+            @if($userRole === 'superadmin')
+                const bidangIdEl = document.getElementById(`${mode}BidangId`);
+                if (bidangIdEl && selectedOption.dataset.bidangId) {
+                    bidangIdEl.value = selectedOption.dataset.bidangId;
+                }
+            @endif
+        }
+    }
     @endif
 </script>
 @endpush

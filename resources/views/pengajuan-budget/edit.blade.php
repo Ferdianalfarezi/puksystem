@@ -14,7 +14,6 @@
         <!-- Modal Body -->
         <form id="editForm" class="p-6 space-y-4">
             @csrf
-            @method('PUT')
             <input type="hidden" id="editPengajuanId" name="id">
 
             @php
@@ -35,6 +34,18 @@
                 <span class="text-red-500 text-sm error-message" id="error-edit-bidang_id"></span>
             </div>
             @endif
+
+            <!-- Jenis -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Jenis <span class="text-red-500">*</span></label>
+                <select id="editJenis" name="jenis" required
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
+                    <option value="">-- Pilih Jenis --</option>
+                    <option value="program_kerja">Program Kerja</option>
+                    <option value="pengajuan_budget">Pengajuan Budget</option>
+                </select>
+                <span class="text-red-500 text-sm error-message" id="error-edit-jenis"></span>
+            </div>
 
             <!-- Nama Pengajuan -->
             <div>
@@ -101,6 +112,19 @@
                     required
                 >
                 <span class="text-red-500 text-xs error-message" id="error-edit-tanggal"></span>
+            </div>
+
+            <!-- Info Box -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div class="flex">
+                    <svg class="w-5 h-5 text-yellow-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <div class="text-sm text-yellow-800">
+                        <p class="font-semibold mb-1">Perhatian:</p>
+                        <p>Pengajuan budget hanya dapat diedit selama masih berstatus <strong>draft</strong>.</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Buttons -->

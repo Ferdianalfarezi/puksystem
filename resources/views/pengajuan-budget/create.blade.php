@@ -23,7 +23,7 @@
             @if($userRole === 'superadmin')
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Bidang <span class="text-red-500">*</span></label>
-                <select id="createBidangId" name="bidang_id" required
+                <select id="createBidangId" name="bidang_id" required onchange="onBidangChange('create')"
                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
                     <option value="">-- Pilih Bidang --</option>
                     @foreach($allBidangs as $bidang)
@@ -32,7 +32,38 @@
                 </select>
                 <span class="text-red-500 text-sm error-message" id="error-create-bidang_id"></span>
             </div>
+            @else
+            <!-- Admin: Tampilkan bidang sebagai readonly -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Bidang</label>
+                <input type="text" value="{{ Auth::user()->bidang->nama ?? '-' }}" readonly
+                    class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-100 text-gray-600 cursor-not-allowed">
+                <input type="hidden" name="bidang_id" value="{{ Auth::user()->bidang_id }}">
+            </div>
             @endif
+
+            <!-- Jenis -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Jenis <span class="text-red-500">*</span></label>
+                <select id="createJenis" name="jenis" required onchange="onJenisChange('create')"
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
+                    <option value="">-- Pilih Jenis --</option>
+                    <option value="program_kerja">Program Kerja</option>
+                    <option value="pengajuan_budget">Pengajuan Budget</option>
+                </select>
+                <span class="text-red-500 text-sm error-message" id="error-create-jenis"></span>
+            </div>
+
+            <!-- Dropdown Program Kerja (Muncul jika jenis = program_kerja) -->
+            <div id="createProgramKerjaWrapper" class="hidden">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Program Kerja <span class="text-red-500">*</span></label>
+                <select id="createProgramKerjaId" name="program_kerja_id" onchange="onProgramKerjaChange('create')"
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
+                    <option value="">-- Pilih Program Kerja --</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Data akan otomatis terisi sesuai program kerja yang dipilih</p>
+                <span class="text-red-500 text-sm error-message" id="error-create-program_kerja_id"></span>
+            </div>
 
             <!-- Nama Pengajuan -->
             <div>
@@ -86,20 +117,7 @@
                 <span class="text-red-500 text-xs error-message" id="error-create-tahun"></span>
             </div>
 
-            <!-- Tanggal -->
-            <div>
-                <label for="createTanggal" class="block text-sm font-semibold text-gray-700 mb-2">
-                    Tanggal Pengajuan <span class="text-red-500">*</span>
-                </label>
-                <input 
-                    type="date" 
-                    id="createTanggal" 
-                    name="tanggal"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition"
-                    required
-                >
-                <span class="text-red-500 text-xs error-message" id="error-create-tanggal"></span>
-            </div>
+            
 
             <!-- Info Box -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">

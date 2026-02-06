@@ -275,67 +275,79 @@
         </div>
 
         <!-- VIEW TAHUNAN -->
-        <div id="yearlyView" class="hidden">
-            <p class="text-sm text-gray-600 mb-3">📅 Tahun {{ $currentYear }}</p>
+<div id="yearlyView" class="hidden">
+    <p class="text-sm text-gray-600 mb-3">📅 Tahun {{ $currentYear }}</p>
+    
+    <div class="grid gap-2" style="grid-template-columns: repeat(12, 1fr);">
+        @foreach(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $month)
+            <div class="text-xs text-center text-gray-700 font-bold p-2 bg-gray-50 rounded">{{ $month }}</div>
+        @endforeach
+    </div>
+
+    <div class="mt-2 grid gap-2" style="grid-template-columns: repeat(12, 1fr);">
+        @php
+            $yearlyData = [];
+            $monthlyBudgets = []; // Array untuk simpan total budget per bulan
             
-            <div class="grid gap-2" style="grid-template-columns: repeat(12, 1fr);">
-                @foreach(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $month)
-                    <div class="text-xs text-center text-gray-700 font-bold p-2 bg-gray-50 rounded">{{ $month }}</div>
-                @endforeach
-            </div>
-
-            <div class="mt-2 grid gap-2" style="grid-template-columns: repeat(12, 1fr);">
-                @php
-                    $yearlyData = [];
-                    foreach($allPrograms as $pk) {
-                        $tanggal = \Carbon\Carbon::parse($pk->tanggal);
-                        if ($tanggal->year == $currentYear) {
-                            $month = $tanggal->month;
-                            if (!isset($yearlyData[$month])) {
-                                $yearlyData[$month] = [];
-                            }
-                            $yearlyData[$month][] = $pk;
-                        }
+            foreach($allPrograms as $pk) {
+                $tanggal = \Carbon\Carbon::parse($pk->tanggal);
+                if ($tanggal->year == $currentYear) {
+                    $month = $tanggal->month;
+                    if (!isset($yearlyData[$month])) {
+                        $yearlyData[$month] = [];
+                        $monthlyBudgets[$month] = 0;
                     }
-                @endphp
-                
-                @for($m = 1; $m <= 12; $m++)
-                    <div class="min-h-[100px] bg-gray-50 rounded p-2 space-y-2">
-                        @if(isset($yearlyData[$m]))
-                            @foreach($yearlyData[$m] as $program)
-                                <div class="group relative">
-                                    <div onclick="scrollToProgram({{ $program->id }})"
-                                        class="rounded h-8 cursor-pointer transition-all duration-200 transform hover:scale-105 opacity-100"
-                                        style="background-color: {{ $colorMap[$program->bidang->nama] ?? '#6b7280' }};">
-                                    </div>
-                                    
-                                    <!-- Tooltip -->
-                                    <div class="tooltip-yearly absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 hidden group-hover:block w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 pointer-events-none">
-                                        <div class="font-bold mb-1">{{ $program->nama }}</div>
-                                        <div class="text-gray-300">📁 Bidang: {{ $program->bidang->nama }}</div>
-                                        <div class="text-gray-300">💰 Anggaran: Rp {{ number_format($program->anggaran, 0, ',', '.') }}</div>
-                                        <div class="text-gray-300">📅 Tanggal: {{ \Carbon\Carbon::parse($program->tanggal)->format('d M Y') }}</div>
-                                        <div class="text-gray-300">📊 Jenis: {{ $program->jenis_pengeluaran ?? '-' }}</div>
-                                        <div class="text-gray-400 text-[10px] mt-2 italic">💡 Klik untuk lihat detail</div>
-                                        <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
-                                    </div>
-                                </div>
-                            @endforeach
+                    $yearlyData[$month][] = $pk;
+                    $monthlyBudgets[$month] += $pk->anggaran; // Tambahkan anggaran
+                }
+            }
+        @endphp
+        
+        @for($m = 1; $m <= 12; $m++)
+            <div class="min-h-[100px] bg-gray-50 rounded p-2 space-y-2">
+                @if(isset($yearlyData[$m]))
+                    @foreach($yearlyData[$m] as $program)
+                        <div class="group relative">
+                            <div onclick="scrollToProgram({{ $program->id }})"
+                                class="rounded h-8 cursor-pointer transition-all duration-200 transform hover:scale-105 opacity-100"
+                                style="background-color: {{ $colorMap[$program->bidang->nama] ?? '#6b7280' }};">
+                            </div>
                             
-                            @if(count($yearlyData[$m]) > 1)
-                                <div class="text-[10px] text-gray-500 text-center mt-1">
-                                    +{{ count($yearlyData[$m]) }} program
-                                </div>
-                            @endif
-                        @endif
+                            <!-- Tooltip -->
+                            <div class="tooltip-yearly absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 hidden group-hover:block w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 pointer-events-none">
+                                <div class="font-bold mb-1">{{ $program->nama }}</div>
+                                <div class="text-gray-300">📁 Bidang: {{ $program->bidang->nama }}</div>
+                                <div class="text-gray-300">💰 Anggaran: Rp {{ number_format($program->anggaran, 0, ',', '.') }}</div>
+                                <div class="text-gray-300">📅 Tanggal: {{ \Carbon\Carbon::parse($program->tanggal)->format('d M Y') }}</div>
+                                <div class="text-gray-300">📊 Jenis: {{ $program->jenis_pengeluaran ?? '-' }}</div>
+                                <div class="text-gray-400 text-[10px] mt-2 italic">💡 Klik untuk lihat detail</div>
+                                <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                            </div>
+                        </div>
+                    @endforeach
+                    
+                    @if(count($yearlyData[$m]) > 1)
+                        <div class="text-[10px] text-gray-500 text-center mt-1">
+                            {{ count($yearlyData[$m]) }} program
+                        </div>
+                    @endif
+                    
+                    <!-- Total Budget Bulan Ini -->
+                    <div class="mt-2 pt-2 border-t border-gray-300">
+                        <div class="text-[10px] font-semibold text-gray-600 text-center">Total:</div>
+                        <div class="text-xs font-bold text-green-700 text-center">
+                            Rp {{ number_format($monthlyBudgets[$m], 0, ',', '.') }}
+                        </div>
                     </div>
-                @endfor
+                @endif
             </div>
+        @endfor
+    </div>
 
-            @if(count($yearlyData) == 0)
-                <p class="text-sm text-gray-500 text-center py-8">Tidak ada program tahun ini</p>
-            @endif
-        </div>
+    @if(count($yearlyData) == 0)
+        <p class="text-sm text-gray-500 text-center py-8">Tidak ada program tahun ini</p>
+    @endif
+</div>
 
         <!-- Legend -->
         <div class="mt-4 pt-4 border-t border-gray-200">
