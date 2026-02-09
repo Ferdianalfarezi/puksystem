@@ -15,7 +15,10 @@ class HistoryController extends Controller
         $user = Auth::user();
         $userRole = $user->role->nama ?? '';
         
-        $query = ProgramKerja::with(['bidang', 'pencairan', 'histories']);
+        // ✅ QUERY DARI TABEL PROGRAM_KERJAS YANG STATUS NYA 'dicairkan'
+        // Karena history hanya untuk yang sudah dicairkan
+        $query = ProgramKerja::with(['bidang', 'pencairan.dicairkanOleh', 'histories.dilakukanOleh'])
+            ->where('status', 'dicairkan'); // ✅ FILTER HANYA YANG DICAIRKAN
 
         if ($userRole === 'admin') {
             $query->where('bidang_id', $user->bidang_id);
@@ -25,6 +28,8 @@ class HistoryController extends Controller
             $query->where('nama', 'like', '%' . $request->search . '%');
         }
 
+        // Filter status - untuk history sebaiknya dihapus atau disesuaikan
+        // karena history page hanya show yang sudah dicairkan
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
@@ -130,13 +135,9 @@ class HistoryController extends Controller
             ]);
         }
 
-        // Return view untuk non-AJAX request (backward compatibility)
         return view('history.detail', compact('programKerja'));
     }
 
-    /**
-     * Get status label in Indonesian
-     */
     private function getStatusLabel($status)
     {
         $labels = [
@@ -152,9 +153,6 @@ class HistoryController extends Controller
         return $labels[$status] ?? $status;
     }
 
-    /**
-     * Get metode pencairan label in Indonesian
-     */
     private function getMetodePencairanLabel($metode)
     {
         $labels = [

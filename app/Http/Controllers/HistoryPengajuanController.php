@@ -13,7 +13,9 @@ class HistoryPengajuanController extends Controller
         $user = Auth::user();
         $userRole = $user->role->nama ?? '';
         
-        $query = PengajuanBudget::with(['bidang', 'pencairan', 'histories']);
+        // ✅ QUERY DARI TABEL PENGAJUAN_BUDGETS YANG STATUS NYA 'dicairkan'
+        $query = PengajuanBudget::with(['bidang', 'pencairan.dicairkanOleh', 'histories.dilakukanOleh'])
+            ->where('status', 'dicairkan'); // ✅ FILTER HANYA YANG DICAIRKAN
 
         if ($userRole === 'admin') {
             $query->where('bidang_id', $user->bidang_id);
@@ -23,6 +25,7 @@ class HistoryPengajuanController extends Controller
             $query->where('nama', 'like', '%' . $request->search . '%');
         }
 
+        // Filter status - untuk history sebaiknya disesuaikan
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }

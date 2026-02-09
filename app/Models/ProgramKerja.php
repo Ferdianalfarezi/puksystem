@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;  // ✅ Untuk bidang, submittedBy, dll
+use Illuminate\Database\Eloquent\Relations\HasOne;     // ✅ Untuk pencairan, pengajuanBudget
+use Illuminate\Database\Eloquent\Relations\HasMany;  // ✅ PASTIKAN ADA INI
 
 class ProgramKerja extends Model
 {
@@ -18,12 +19,23 @@ class ProgramKerja extends Model
         'jenis_pengeluaran',
         'tahun',
         'tanggal',
-        'status', // ✅ Tambahkan ini
+        'status',
+        'submitted_at',
+        'submitted_by',
+        'reviewed_at_bendahara',
+        'reviewed_by_bendahara',
+        'catatan_bendahara',
+        'reviewed_at_ketua',
+        'reviewed_by_ketua',
+        'catatan_ketua',
     ];
 
     protected $casts = [
         'anggaran' => 'decimal:2',
         'tanggal' => 'date',
+        'submitted_at' => 'datetime',
+        'reviewed_at_bendahara' => 'datetime',
+        'reviewed_at_ketua' => 'datetime',
     ];
 
     public const JENIS_PENGELUARAN = [
@@ -42,23 +54,39 @@ class ProgramKerja extends Model
         'Rapat GM'
     ];
 
-    // ✅ Relationships
+    // ✅ RELATIONSHIPS
     public function bidang(): BelongsTo
     {
         return $this->belongsTo(Bidang::class);
     }
 
-    public function pencairan(): BelongsTo
+    public function submittedBy(): BelongsTo
     {
-        return $this->belongsTo(Pencairan::class);
+        return $this->belongsTo(User::class, 'submitted_by');
     }
 
-    public function histories(): BelongsTo
+    public function reviewedByBendahara(): BelongsTo
     {
-        return $this->belongsTo(ProgramKerjaHistory::class);
+        return $this->belongsTo(User::class, 'reviewed_by_bendahara');
     }
 
-    // ✅ Relation ke PengajuanBudget (HasOne)
+    public function reviewedByKetua(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by_ketua');
+    }
+
+    // ✅ FIX: Ganti dari BelongsTo ke HasOne
+    public function pencairan(): HasOne
+    {
+        return $this->hasOne(Pencairan::class);
+    }
+
+    // ✅ FIX: Ganti dari BelongsTo ke HasMany
+    public function histories(): HasMany
+    {
+        return $this->hasMany(ProgramKerjaHistory::class);
+    }
+
     public function pengajuanBudget(): HasOne
     {
         return $this->hasOne(PengajuanBudget::class);
@@ -85,7 +113,27 @@ class ProgramKerja extends Model
         return $query->where('status', $status);
     }
 
-    // ✅ Helper methods untuk status
+    // Helper methods
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    public function canBeSubmitted(): bool
+    {
+        return $this->isDraft();
+    }
+
+    public function canBeEdited(): bool
+    {
+        return $this->isDraft();
+    }
+
+    public function canBeDeleted(): bool
+    {
+        return $this->isDraft();
+    }
+
     public function getStatusBadgeClass(): string
     {
         return match($this->status) {

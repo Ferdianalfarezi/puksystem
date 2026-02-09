@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\ProgramKerja;
 use App\Models\PengajuanBudget;
-use App\Models\PengajuanHutang; // ✅ TAMBAHKAN
+use App\Models\PengajuanHutang;
 use App\Models\Pencairan;
 use App\Models\PencairanBudget;
 use App\Models\ProgramKerjaHistory;
 use App\Models\PengajuanBudgetHistory;
-use App\Models\PengajuanHutangHistory; // ✅ TAMBAHKAN
+use App\Models\PengajuanHutangHistory;
 use App\Models\Kas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,7 +57,7 @@ class PencairanController extends Controller
                 ];
             });
 
-        // ✅ TAMBAHKAN: Ambil Pengajuan Hutang yang menunggu pencairan
+        // Ambil Pengajuan Hutang yang menunggu pencairan
         $pengajuanHutangs = PengajuanHutang::with(['user', 'bidang', 'submittedBy', 'reviewedByBendahara', 'reviewedByKetua'])
             ->where('status', 'menunggu_pencairan')
             ->get()
@@ -116,7 +116,7 @@ class PencairanController extends Controller
             $historyModel = PengajuanBudgetHistory::class;
             $foreignKey = 'pengajuan_budget_id';
             $isHutang = false;
-        } elseif ($type === 'pengajuan_hutang') { // ✅ TAMBAHKAN
+        } elseif ($type === 'pengajuan_hutang') {
             $item = PengajuanHutang::findOrFail($id);
             $historyModel = PengajuanHutangHistory::class;
             $foreignKey = 'pengajuan_hutang_id';
@@ -152,12 +152,12 @@ class PencairanController extends Controller
             $kasGlobal = Kas::getGlobal();
             $statusLama = $item->status;
             $saldoSebelum = $kasGlobal->saldo;
+            $saldoSesudah = $saldoSebelum - $validated['jumlah_dicairkan'];
             
-            // ✅ LOGIC BERBEDA: Hutang MENGURANGI kas, bukan menambah
+            $pencairan = null; // Initialize variabel pencairan
+            
             if ($isHutang) {
-                $saldoSesudah = $saldoSebelum - $validated['jumlah_dicairkan'];
-                
-                // Kurangi saldo kas
+                // Untuk hutang, langsung kurangi kas tanpa create record pencairan
                 $historyKas = $kasGlobal->kurangiSaldo(
                     jumlah: $validated['jumlah_dicairkan'],
                     keterangan: "Pencairan Hutang: {$item->nama} ({$item->bidang->nama})",
@@ -165,10 +165,8 @@ class PencairanController extends Controller
                     referable: $item
                 );
             } else {
-                $saldoSesudah = $saldoSebelum - $validated['jumlah_dicairkan'];
-                
-                // Create pencairan record (untuk program kerja & budget)
-                $pencairan = $pencairanModel::create([
+                // Untuk Program Kerja & Budget: Create record pencairan dulu
+                $pencairanData = [
                     $foreignKey => $item->id,
                     'jumlah_dicairkan' => $validated['jumlah_dicairkan'],
                     'tanggal_pencairan' => now(),
@@ -176,7 +174,14 @@ class PencairanController extends Controller
                     'nomor_referensi' => $validated['nomor_referensi'] ?? null,
                     'catatan' => $validated['catatan'] ?? null,
                     'dicairkan_oleh' => Auth::id(),
-                ]);
+                ];
+
+                // Tambahkan tanggal_program hanya untuk Pencairan (Program Kerja)
+                if ($type === 'program_kerja') {
+                    $pencairanData['tanggal_program'] = $item->tanggal;
+                }
+
+                $pencairan = $pencairanModel::create($pencairanData);
 
                 // Kurangi saldo kas
                 $historyKas = $kasGlobal->kurangiSaldo(
@@ -186,39 +191,28 @@ class PencairanController extends Controller
                     referable: $pencairan
                 );
 
-                // Update pencairan dengan history_kas_id
+                // Update pencairan dengan history_kas_id (hanya untuk program_kerja)
                 if ($type === 'program_kerja') {
                     $pencairan->update(['history_kas_id' => $historyKas->id]);
                 }
             }
 
-            // Update status
+            // Update status item
             $item->update(['status' => 'dicairkan']);
 
-            // Create history
-            $historyData = [
-                $foreignKey => $item->id,
-                'status_dari' => $statusLama,
-                'status_ke' => 'dicairkan',
-                'catatan' => 'Dana dicairkan sebesar Rp ' . number_format($validated['jumlah_dicairkan'], 0, ',', '.') 
-                          . ' via ' . $this->getMetodePencairanLabel($validated['metode_pencairan'])
-                          . '. Saldo kas: Rp ' . number_format($saldoSesudah, 0, ',', '.'),
-                'dilakukan_oleh' => Auth::id(),
-                'dilakukan_pada' => now(),
-                'data_snapshot' => [
-                    'nama' => $item->nama,
-                    $jumlahField => $item->$jumlahField,
-                    'jumlah_dicairkan' => $validated['jumlah_dicairkan'],
-                    'metode_pencairan' => $validated['metode_pencairan'],
-                    'saldo_kas_sebelum' => $saldoSebelum,
-                    'saldo_kas_sesudah' => $saldoSesudah,
-                    'bidang' => $item->bidang->nama,
-                    'tahun' => $item->tahun,
-                    'tanggal' => $item->tanggal ? $item->tanggal->format('Y-m-d') : null,
-                ],
-            ];
-
-            $historyModel::create($historyData);
+            // ✅ CREATE HISTORY BERDASARKAN DATA DARI PENCAIRAN
+            $this->createHistory(
+                type: $type,
+                item: $item,
+                pencairan: $pencairan,
+                validated: $validated,
+                statusLama: $statusLama,
+                saldoSebelum: $saldoSebelum,
+                saldoSesudah: $saldoSesudah,
+                historyModel: $historyModel,
+                foreignKey: $foreignKey,
+                isHutang: $isHutang
+            );
 
             DB::commit();
 
@@ -235,6 +229,95 @@ class PencairanController extends Controller
         }
     }
 
+    /**
+     * Create history record berdasarkan data pencairan
+     */
+    private function createHistory(
+        string $type,
+        $item,
+        $pencairan,
+        array $validated,
+        string $statusLama,
+        float $saldoSebelum,
+        float $saldoSesudah,
+        string $historyModel,
+        string $foreignKey,
+        bool $isHutang
+    ): void
+    {
+        $jumlahField = $isHutang ? 'jumlah' : 'anggaran';
+        
+        // Base history data
+        $historyData = [
+            $foreignKey => $item->id,
+            'status_dari' => $statusLama,
+            'status_ke' => 'dicairkan',
+            'dilakukan_oleh' => Auth::id(),
+            'dilakukan_pada' => now(),
+        ];
+
+        // ✅ AMBIL DATA DARI PENCAIRAN (kalau bukan hutang)
+        if (!$isHutang && $pencairan) {
+            $historyData['catatan'] = 'Dana dicairkan sebesar Rp ' . number_format($pencairan->jumlah_dicairkan, 0, ',', '.') 
+                      . ' via ' . $pencairan->metode_pencairan_label
+                      . ($pencairan->nomor_referensi ? ' (Ref: ' . $pencairan->nomor_referensi . ')' : '')
+                      . '. Saldo kas: Rp ' . number_format($saldoSesudah, 0, ',', '.');
+
+            $historyData['data_snapshot'] = [
+                'nama' => $item->nama,
+                $jumlahField => $item->$jumlahField,
+                'jumlah_dicairkan' => $pencairan->jumlah_dicairkan,
+                'tanggal_pencairan' => $pencairan->tanggal_pencairan->format('Y-m-d H:i:s'),
+                'metode_pencairan' => $pencairan->metode_pencairan,
+                'metode_pencairan_label' => $pencairan->metode_pencairan_label,
+                'nomor_referensi' => $pencairan->nomor_referensi,
+                'catatan_pencairan' => $pencairan->catatan,
+                'saldo_kas_sebelum' => $saldoSebelum,
+                'saldo_kas_sesudah' => $saldoSesudah,
+                'bidang' => $item->bidang->nama,
+                'tahun' => $item->tahun,
+                'tanggal' => $item->tanggal?->format('Y-m-d'),
+                'dicairkan_oleh' => $pencairan->dicairkanOleh->name ?? '-',
+            ];
+
+            // Tambahkan tanggal_program untuk ProgramKerjaHistory
+            if ($type === 'program_kerja') {
+                $historyData['tanggal_program'] = $pencairan->tanggal_program;
+            }
+
+            // Tambahkan tanggal_pengajuan untuk PengajuanBudgetHistory
+            if ($type === 'pengajuan_budget') {
+                $historyData['tanggal_pengajuan'] = $item->tanggal;
+            }
+        } else {
+            // Untuk hutang (tanpa record pencairan)
+            $historyData['catatan'] = 'Hutang dicairkan sebesar Rp ' . number_format($validated['jumlah_dicairkan'], 0, ',', '.') 
+                      . ' via ' . $this->getMetodePencairanLabel($validated['metode_pencairan'])
+                      . ($validated['nomor_referensi'] ? ' (Ref: ' . $validated['nomor_referensi'] . ')' : '')
+                      . '. Saldo kas: Rp ' . number_format($saldoSesudah, 0, ',', '.');
+
+            $historyData['data_snapshot'] = [
+                'nama' => $item->nama,
+                'jumlah' => $item->jumlah,
+                'jumlah_dicairkan' => $validated['jumlah_dicairkan'],
+                'tanggal_pencairan' => now()->format('Y-m-d H:i:s'),
+                'metode_pencairan' => $validated['metode_pencairan'],
+                'metode_pencairan_label' => $this->getMetodePencairanLabel($validated['metode_pencairan']),
+                'nomor_referensi' => $validated['nomor_referensi'] ?? null,
+                'catatan_pencairan' => $validated['catatan'] ?? null,
+                'saldo_kas_sebelum' => $saldoSebelum,
+                'saldo_kas_sesudah' => $saldoSesudah,
+                'bidang' => $item->bidang->nama,
+                'tahun' => $item->tahun,
+                'tanggal' => $item->tanggal?->format('Y-m-d'),
+                'dicairkan_oleh' => Auth::user()->name,
+            ];
+        }
+
+        // Create history record
+        $historyModel::create($historyData);
+    }
+
     private function getMetodePencairanLabel($metode)
     {
         return match($metode) {
@@ -242,7 +325,7 @@ class PencairanController extends Controller
             'tunai' => 'Tunai',
             'cek' => 'Cek',
             'giro' => 'Giro',
-            default => $metode,
+            default => ucfirst(str_replace('_', ' ', $metode)),
         };
     }
 }

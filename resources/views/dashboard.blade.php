@@ -287,9 +287,9 @@
             
             <div class="flex flex-col md:flex-row items-start md:items-center gap-3">
                 <!-- Month Selector (Hanya untuk View Bulanan) -->
-                <div id="monthSelector" class="flex items-center space-x-2">
+                <div id="monthSelectorDashboard" class="flex items-center space-x-2">
                     <label class="text-sm text-gray-600 font-medium">Bulan:</label>
-                    <select id="selectMonth" onchange="changeMonth()" 
+                    <select id="selectMonthDashboard" onchange="changeMonthDashboard()" 
                             class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
                         <option value="1">Januari</option>
                         <option value="2">Februari</option>
@@ -304,7 +304,7 @@
                         <option value="11">November</option>
                         <option value="12">Desember</option>
                     </select>
-                    <select id="selectYear" onchange="changeMonth()" 
+                    <select id="selectYearDashboard" onchange="changeMonthDashboard()" 
                             class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition">
                         @for($y = now()->year - 2; $y <= now()->year + 2; $y++)
                             <option value="{{ $y }}" {{ $y == now()->year ? 'selected' : '' }}>{{ $y }}</option>
@@ -314,11 +314,11 @@
                 
                 <!-- Toggle Bulanan/Tahunan -->
                 <div class="flex items-center space-x-2">
-                    <button id="btnMonthly" onclick="switchView('monthly')" 
+                    <button id="btnMonthlyDashboard" onclick="switchViewDashboard('monthly')" 
                             class="px-4 py-2 text-sm font-semibold rounded-lg transition bg-black text-white">
                         Bulanan
                     </button>
-                    <button id="btnYearly" onclick="switchView('yearly')" 
+                    <button id="btnYearlyDashboard" onclick="switchViewDashboard('yearly')" 
                             class="px-4 py-2 text-sm font-semibold rounded-lg transition bg-gray-200 text-gray-700 hover:bg-gray-300">
                         Tahunan
                     </button>
@@ -327,26 +327,26 @@
         </div>
 
         <!-- VIEW BULANAN -->
-        <div id="monthlyView">
+        <div id="monthlyViewDashboard">
             @php
                 $bulanIndo = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
             @endphp
-            <p id="monthLabel" class="text-sm text-gray-600 mb-3">📅 {{ $bulanIndo[now()->month] }} {{ now()->year }}</p>
+            <p id="monthLabelDashboard" class="text-sm text-gray-600 mb-3">📅 {{ $bulanIndo[now()->month] }} {{ now()->year }}</p>
             
-            <div id="monthlyGridContainer">
+            <div id="monthlyGridContainerDashboard">
                 @php
                     $daysInMonth = now()->daysInMonth;
                 @endphp
                 
                 <!-- Header Kalender Bulanan -->
-                <div class="grid gap-1" id="monthlyHeader" style="grid-template-columns: repeat({{ $daysInMonth }}, 1fr);">
+                <div class="grid gap-1" id="monthlyHeaderDashboard" style="grid-template-columns: repeat({{ $daysInMonth }}, 1fr);">
                     @for($d=1; $d <= $daysInMonth; $d++)
                         <div class="text-xs text-center text-gray-500 font-semibold p-2 bg-gray-50 rounded">{{ $d }}</div>
                     @endfor
                 </div>
                         
                 <!-- Body Gantt Bulanan -->
-                <div class="mt-2 grid gap-1" id="monthlyBody" style="grid-template-columns: repeat({{ $daysInMonth }}, 1fr);">
+                <div class="mt-2 grid gap-1" id="monthlyBodyDashboard" style="grid-template-columns: repeat({{ $daysInMonth }}, 1fr);">
                     @php
                         $monthlyData = [];
                         foreach($dicairkan as $pk) {
@@ -366,7 +366,8 @@
                             @if(isset($monthlyData[$d]))
                                 @foreach($monthlyData[$d] as $program)
                                     <div class="group relative">
-                                        <div class="rounded h-6 cursor-pointer transition-all duration-200 transform hover:scale-105"
+                                        <div onclick="openProgramDetailDashboard({{ $program->id }})"
+                                            class="rounded h-6 cursor-pointer transition-all duration-200 transform hover:scale-105 opacity-100"
                                             style="background-color: {{ $colorMap[$program->bidang->nama] ?? '#6b7280' }};">
                                         </div>
                                         
@@ -376,6 +377,8 @@
                                             <div class="text-gray-300">📁 Bidang: {{ $program->bidang->nama }}</div>
                                             <div class="text-gray-300">💰 Anggaran: Rp {{ number_format($program->anggaran, 0, ',', '.') }}</div>
                                             <div class="text-gray-300">📅 Tanggal: {{ \Carbon\Carbon::parse($program->tanggal)->format('d M Y') }}</div>
+                                            <div class="text-gray-300">📊 Jenis: {{ $program->jenis_pengeluaran ?? '-' }}</div>
+                                            <div class="text-gray-400 text-[10px] mt-2 italic">💡 Klik untuk lihat detail</div>
                                             <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
                                         </div>
                                     </div>
@@ -386,18 +389,18 @@
                 </div>
 
                 @if(count($monthlyData) == 0)
-                    <p class="text-sm text-gray-500 text-center py-8" id="monthlyEmpty">Tidak ada program yang dilaksanakan bulan ini</p>
+                    <p class="text-sm text-gray-500 text-center py-8" id="monthlyEmptyDashboard">Tidak ada program yang dilaksanakan bulan ini</p>
                 @endif
             </div>
         </div>
 
         <!-- VIEW TAHUNAN -->
-        <div id="yearlyView" class="hidden">
+        <div id="yearlyViewDashboard" class="hidden">
             <p class="text-sm text-gray-600 mb-3">📅 Tahun {{ $currentYear }}</p>
             
             <!-- Header Kalender Tahunan -->
             <div class="grid gap-2" style="grid-template-columns: repeat(12, 1fr);">
-                @foreach(['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'] as $month)
+                @foreach(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $month)
                     <div class="text-xs text-center text-gray-700 font-bold p-2 bg-gray-50 rounded">{{ $month }}</div>
                 @endforeach
             </div>
@@ -406,14 +409,18 @@
             <div class="mt-2 grid gap-2" style="grid-template-columns: repeat(12, 1fr);">
                 @php
                     $yearlyData = [];
+                    $monthlyBudgets = []; // Array untuk simpan total budget per bulan
+                    
                     foreach($dicairkan as $pk) {
                         $tanggal = \Carbon\Carbon::parse($pk->tanggal);
                         if ($tanggal->year == $currentYear) {
                             $month = $tanggal->month;
                             if (!isset($yearlyData[$month])) {
                                 $yearlyData[$month] = [];
+                                $monthlyBudgets[$month] = 0;
                             }
                             $yearlyData[$month][] = $pk;
+                            $monthlyBudgets[$month] += $pk->anggaran; // Tambahkan anggaran
                         }
                     }
                 @endphp
@@ -423,7 +430,8 @@
                         @if(isset($yearlyData[$m]))
                             @foreach($yearlyData[$m] as $program)
                                 <div class="group relative">
-                                    <div class="rounded h-8 cursor-pointer transition-all duration-200 transform hover:scale-105"
+                                    <div onclick="openProgramDetailDashboard({{ $program->id }})"
+                                        class="rounded h-8 cursor-pointer transition-all duration-200 transform hover:scale-105 opacity-100"
                                         style="background-color: {{ $colorMap[$program->bidang->nama] ?? '#6b7280' }};">
                                     </div>
                                     
@@ -433,6 +441,8 @@
                                         <div class="text-gray-300">📁 Bidang: {{ $program->bidang->nama }}</div>
                                         <div class="text-gray-300">💰 Anggaran: Rp {{ number_format($program->anggaran, 0, ',', '.') }}</div>
                                         <div class="text-gray-300">📅 Tanggal: {{ \Carbon\Carbon::parse($program->tanggal)->format('d M Y') }}</div>
+                                        <div class="text-gray-300">📊 Jenis: {{ $program->jenis_pengeluaran ?? '-' }}</div>
+                                        <div class="text-gray-400 text-[10px] mt-2 italic">💡 Klik untuk lihat detail</div>
                                         <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
                                     </div>
                                 </div>
@@ -440,9 +450,17 @@
                             
                             @if(count($yearlyData[$m]) > 1)
                                 <div class="text-[10px] text-gray-500 text-center mt-1">
-                                    +{{ count($yearlyData[$m]) }} program
+                                    {{ count($yearlyData[$m]) }} program
                                 </div>
                             @endif
+                            
+                            <!-- Total Budget Bulan Ini -->
+                            <div class="mt-2 pt-2 border-t border-gray-300">
+                                <div class="text-[10px] font-semibold text-gray-600 text-center">Total:</div>
+                                <div class="text-xs font-bold text-green-700 text-center">
+                                    Rp {{ number_format($monthlyBudgets[$m], 0, ',', '.') }}
+                                </div>
+                            </div>
                         @endif
                     </div>
                 @endfor
@@ -451,6 +469,19 @@
             @if(count($yearlyData) == 0)
                 <p class="text-sm text-gray-500 text-center py-8">Tidak ada program yang dicairkan tahun ini</p>
             @endif
+        </div>
+
+        <!-- Legend -->
+        <div class="mt-4 pt-4 border-t border-gray-200">
+            <p class="text-xs text-gray-500 mb-2">Keterangan Bidang:</p>
+            <div class="flex flex-wrap gap-3">
+                @foreach($colorMap as $bidang => $color)
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 rounded" style="background-color: {{ $color }}"></div>
+                    <span class="text-xs text-gray-600">{{ $bidang }}</span>
+                </div>
+                @endforeach
+            </div>
         </div>
     </div>
     <!-- ===== END GANTT ===== -->
@@ -560,10 +591,72 @@
         <canvas id="monthlyBarChart" height="50"></canvas>
     </div>
     <!-- ===== END BAR CHART ===== -->
+</div>
 
-    <!-- Two Column Layout (existing content) -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- ... existing Recent Users and Roles Overview ... -->
+<!-- ✅ MODAL DETAIL PROGRAM KERJA -->
+<div id="programDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Detail Program Kerja</h3>
+                <button onclick="closeProgramDetailModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="space-y-4">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <label class="text-sm font-semibold text-gray-600">Nama Program</label>
+                    <p id="detailNamaProgram" class="text-lg font-bold text-gray-900 mt-1"></p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <label class="text-sm font-semibold text-gray-600">Bidang</label>
+                        <p id="detailBidangProgram" class="text-base text-gray-900 mt-1"></p>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <label class="text-sm font-semibold text-gray-600">Jenis Pengeluaran</label>
+                        <p id="detailJenisProgram" class="text-base text-gray-900 mt-1"></p>
+                    </div>
+                </div>
+
+                <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <label class="text-sm font-semibold text-green-700">Anggaran</label>
+                    <p id="detailAnggaranProgram" class="text-2xl font-bold text-green-600 mt-1"></p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <label class="text-sm font-semibold text-gray-600">Tanggal</label>
+                        <p id="detailTanggalProgram" class="text-base text-gray-900 mt-1"></p>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <label class="text-sm font-semibold text-gray-600">Tahun</label>
+                        <p id="detailTahunProgram" class="text-base text-gray-900 mt-1"></p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <label class="text-sm font-semibold text-gray-600">Status</label>
+                    <p id="detailStatusProgram" class="text-base mt-1"></p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeProgramDetailModal()" 
+                        class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -585,7 +678,7 @@
 @push('scripts')
 <script>
 // Data program kerja dari PHP
-const programKerjas = @json($dicairkan->values());
+const programKerjasDashboard = @json($dicairkan->values());
 
 const colorMap = {
     'Bidang Organisasi': '#3b82f6',
@@ -604,24 +697,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentMonth = {{ now()->month }};
     const currentYear = {{ now()->year }};
     
-    document.getElementById('selectMonth').value = currentMonth;
-    document.getElementById('selectYear').value = currentYear;
+    const selectMonth = document.getElementById('selectMonthDashboard');
+    const selectYear = document.getElementById('selectYearDashboard');
     
-    adjustTooltipPosition();
+    if (selectMonth) selectMonth.value = currentMonth;
+    if (selectYear) selectYear.value = currentYear;
+    
+    adjustTooltipPositionDashboard();
 });
 
-function changeMonth() {
-    const month = parseInt(document.getElementById('selectMonth').value);
-    const year = parseInt(document.getElementById('selectYear').value);
+function changeMonthDashboard() {
+    const month = parseInt(document.getElementById('selectMonthDashboard').value);
+    const year = parseInt(document.getElementById('selectYearDashboard').value);
     
     const monthNames = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
                        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    document.getElementById('monthLabel').textContent = `📅 ${monthNames[month]} ${year}`;
+    document.getElementById('monthLabelDashboard').textContent = `📅 ${monthNames[month]} ${year}`;
     
     const daysInMonth = new Date(year, month, 0).getDate();
     
     const monthlyData = {};
-    programKerjas.forEach(pk => {
+    programKerjasDashboard.forEach(pk => {
         const date = new Date(pk.tanggal);
         if (date.getMonth() + 1 === month && date.getFullYear() === year) {
             const day = date.getDate();
@@ -650,7 +746,8 @@ function changeMonth() {
                 
                 bodyHtml += `
                     <div class="group relative">
-                        <div class="rounded h-6 cursor-pointer transition-all duration-200 transform hover:scale-105"
+                        <div onclick="openProgramDetailDashboard(${program.id})" 
+                             class="rounded h-6 cursor-pointer transition-all duration-200 transform hover:scale-105 opacity-100"
                              style="background-color: ${badgeColor};">
                         </div>
                         <div class="tooltip-monthly absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 hidden group-hover:block w-64 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 pointer-events-none">
@@ -658,6 +755,8 @@ function changeMonth() {
                             <div class="text-gray-300">📁 Bidang: ${program.bidang.nama}</div>
                             <div class="text-gray-300">💰 Anggaran: Rp ${formattedAnggaran}</div>
                             <div class="text-gray-300">📅 Tanggal: ${formattedDate}</div>
+                            <div class="text-gray-300">📊 Jenis: ${program.jenis_pengeluaran || '-'}</div>
+                            <div class="text-gray-400 text-[10px] mt-2 italic">💡 Klik untuk lihat detail</div>
                             <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
                         </div>
                     </div>
@@ -668,8 +767,8 @@ function changeMonth() {
         bodyHtml += `</div>`;
     }
     
-    const header = document.getElementById('monthlyHeader');
-    const body = document.getElementById('monthlyBody');
+    const header = document.getElementById('monthlyHeaderDashboard');
+    const body = document.getElementById('monthlyBodyDashboard');
     
     header.style.gridTemplateColumns = `repeat(${daysInMonth}, 1fr)`;
     header.innerHTML = headerHtml;
@@ -677,24 +776,24 @@ function changeMonth() {
     body.style.gridTemplateColumns = `repeat(${daysInMonth}, 1fr)`;
     body.innerHTML = bodyHtml;
     
-    const emptyMsg = document.getElementById('monthlyEmpty');
+    const emptyMsg = document.getElementById('monthlyEmptyDashboard');
     if (Object.keys(monthlyData).length === 0) {
         if (!emptyMsg) {
-            body.insertAdjacentHTML('afterend', '<p class="text-sm text-gray-500 text-center py-8" id="monthlyEmpty">Tidak ada program yang dilaksanakan bulan ini</p>');
+            body.insertAdjacentHTML('afterend', '<p class="text-sm text-gray-500 text-center py-8" id="monthlyEmptyDashboard">Tidak ada program yang dilaksanakan bulan ini</p>');
         }
     } else {
         if (emptyMsg) emptyMsg.remove();
     }
     
-    setTimeout(() => adjustTooltipPosition(), 100);
+    setTimeout(() => adjustTooltipPositionDashboard(), 100);
 }
 
-function switchView(view) {
-    const monthlyView = document.getElementById('monthlyView');
-    const yearlyView = document.getElementById('yearlyView');
-    const monthSelector = document.getElementById('monthSelector');
-    const btnMonthly = document.getElementById('btnMonthly');
-    const btnYearly = document.getElementById('btnYearly');
+function switchViewDashboard(view) {
+    const monthlyView = document.getElementById('monthlyViewDashboard');
+    const yearlyView = document.getElementById('yearlyViewDashboard');
+    const monthSelector = document.getElementById('monthSelectorDashboard');
+    const btnMonthly = document.getElementById('btnMonthlyDashboard');
+    const btnYearly = document.getElementById('btnYearlyDashboard');
 
     if (view === 'monthly') {
         monthlyView.classList.remove('hidden');
@@ -719,7 +818,7 @@ function switchView(view) {
     }
 }
 
-function adjustTooltipPosition() {
+function adjustTooltipPositionDashboard() {
     document.querySelectorAll('.tooltip-monthly, .tooltip-yearly').forEach(tooltip => {
         tooltip.parentElement.addEventListener('mouseenter', function() {
             setTimeout(() => {
@@ -749,6 +848,74 @@ function adjustTooltipPosition() {
         });
     });
 }
+
+// ✅ Fungsi untuk buka modal detail
+async function openProgramDetailDashboard(programId) {
+    try {
+        const response = await fetch(`/program-kerja/${programId}/detail`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const pk = data.data;
+            
+            document.getElementById('detailNamaProgram').textContent = pk.nama;
+            document.getElementById('detailBidangProgram').textContent = pk.bidang.nama;
+            document.getElementById('detailJenisProgram').textContent = pk.jenis_pengeluaran || '-';
+            document.getElementById('detailAnggaranProgram').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(pk.anggaran)}`;
+            document.getElementById('detailTanggalProgram').textContent = new Date(pk.tanggal).toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            document.getElementById('detailTahunProgram').textContent = pk.tahun || '-';
+            
+            // Status dengan badge
+            const statusEl = document.getElementById('detailStatusProgram');
+            statusEl.innerHTML = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(pk.status)}">${pk.status_label}</span>`;
+            
+            // Show modal
+            const modal = document.getElementById('programDetailModal');
+            document.body.style.overflow = 'hidden';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Gagal memuat detail program kerja');
+    }
+}
+
+function closeProgramDetailModal() {
+    const modal = document.getElementById('programDetailModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = '';
+}
+
+function getStatusBadgeClass(status) {
+    const badges = {
+        'draft': 'bg-gray-100 text-gray-800',
+        'diajukan': 'bg-blue-100 text-blue-800',
+        'disetujui': 'bg-yellow-100 text-yellow-800',
+        'dicairkan': 'bg-green-100 text-green-800',
+        'ditolak': 'bg-red-100 text-red-800'
+    };
+    return badges[status] || 'bg-gray-100 text-gray-800';
+}
+
+// Close modal when clicking outside
+document.getElementById('programDetailModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeProgramDetailModal();
+    }
+});
+
+// Close modal with ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeProgramDetailModal();
+    }
+});
 
 // BAR CHART
 document.addEventListener("DOMContentLoaded", function () {

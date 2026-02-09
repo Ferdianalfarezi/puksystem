@@ -20,6 +20,7 @@ use App\Http\Controllers\KetuaHutangController;
 use App\Http\Controllers\PembayaranHutangController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventAttendanceController;
+use App\Http\Controllers\SuratMasukController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -75,6 +76,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/scan', [EventAttendanceController::class, 'scan'])->name('scan');
         Route::get('/list', [EventAttendanceController::class, 'list'])->name('list');
         Route::get('/export', [EventAttendanceController::class, 'export'])->name('export');
+    });
+
+    // ✅ Route untuk Surat Masuk (Sekretaris)
+    Route::prefix('surat-masuk')->name('surat-masuk.')->group(function () {
+        Route::get('/', [SuratMasukController::class, 'index'])->name('index');
+        Route::get('/{id}', [SuratMasukController::class, 'show'])->name('show');
     });
 
     // ========================================
