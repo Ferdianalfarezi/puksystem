@@ -21,6 +21,9 @@ use App\Http\Controllers\PembayaranHutangController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventAttendanceController;
 use App\Http\Controllers\SuratMasukController;
+use App\Http\Controllers\DispensasiController;
+use App\Http\Controllers\SekretarisDispensasiController;
+use App\Http\Controllers\KetuaDispensasiController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -58,6 +61,13 @@ Route::middleware('auth')->group(function () {
     Route::post('pengajuan-budget/{pengajuanBudget}/submit', [PengajuanBudgetController::class, 'submit'])
         ->name('pengajuan-budget.submit');
 
+    // ========================================
+    // ROUTE DISPENSASI - Admin Bidang & Superadmin
+    // ========================================
+    Route::resource('dispensasi', DispensasiController::class);
+    Route::post('dispensasi/{id}/submit', [DispensasiController::class, 'submit'])->name('dispensasi.submit');
+    Route::get('dispensasi/{id}/print', [DispensasiController::class, 'print'])->name('dispensasi.print');
+
     // Route untuk Pengajuan Hutang
     Route::resource('pengajuan-hutang', PengajuanHutangController::class);
     Route::post('pengajuan-hutang/{pengajuanHutang}/submit', [PengajuanHutangController::class, 'submit'])
@@ -82,6 +92,17 @@ Route::middleware('auth')->group(function () {
     Route::prefix('surat-masuk')->name('surat-masuk.')->group(function () {
         Route::get('/', [SuratMasukController::class, 'index'])->name('index');
         Route::get('/{id}', [SuratMasukController::class, 'show'])->name('show');
+    });
+
+    // ========================================
+    // ROUTE SEKRETARIS - APPROVAL DISPENSASI
+    // ========================================
+    Route::prefix('sekretaris')->name('sekretaris.')->group(function () {
+        Route::prefix('dispensasi')->name('dispensasi.')->group(function () {
+            Route::get('/', [SekretarisDispensasiController::class, 'index'])->name('index');
+            Route::post('{id}/approve', [SekretarisDispensasiController::class, 'approve'])->name('approve');
+            Route::post('{id}/reject', [SekretarisDispensasiController::class, 'reject'])->name('reject');
+        });
     });
 
     // ========================================
@@ -133,6 +154,13 @@ Route::middleware('auth')->group(function () {
             Route::get('/{pengajuanHutang}', [KetuaHutangController::class, 'show'])->name('show');
             Route::post('/{pengajuanHutang}/approve', [KetuaHutangController::class, 'approve'])->name('approve');
             Route::post('/{pengajuanHutang}/reject', [KetuaHutangController::class, 'reject'])->name('reject');
+        });
+        
+        // DISPENSASI - Approval Ketua
+        Route::prefix('dispensasi')->name('dispensasi.')->group(function () {
+            Route::get('/', [KetuaDispensasiController::class, 'index'])->name('index');
+            Route::post('{id}/approve', [KetuaDispensasiController::class, 'approve'])->name('approve');
+            Route::post('{id}/reject', [KetuaDispensasiController::class, 'reject'])->name('reject');
         });
         
         // PROGRAM KERJA (Review)

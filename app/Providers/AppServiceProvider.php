@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Models\PengajuanBudget; // ✅ PERBAIKI INI - Model bukan Provider
 use App\Observers\PengajuanBudgetObserver;
+use Carbon\Carbon;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,5 +24,6 @@ class AppServiceProvider extends ServiceProvider
     {
         // ✅ Register Observer
         PengajuanBudget::observe(PengajuanBudgetObserver::class);
+        Carbon::setLocale(config('app.locale'));
     }
 }
