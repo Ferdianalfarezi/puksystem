@@ -24,6 +24,7 @@ use App\Http\Controllers\SuratMasukController;
 use App\Http\Controllers\DispensasiController;
 use App\Http\Controllers\SekretarisDispensasiController;
 use App\Http\Controllers\KetuaDispensasiController;
+use App\Http\Controllers\KoorlapController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +51,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/template', [UserController::class, 'downloadTemplate'])->name('users.template');
     Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
     Route::resource('users', UserController::class);
+
+    Route::resource('koorlaps', KoorlapController::class);
 
     // Route untuk Admin Bidang - Program Kerja
     Route::resource('program-kerja', ProgramKerjaController::class);

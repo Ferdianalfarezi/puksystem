@@ -283,7 +283,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <!-- Header dengan Toggle View -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-            <h2 class="text-lg font-bold text-gray-900">Kalender Program Kerja (Disetujui)</h2>
+            <h2 class="text-lg font-bold text-gray-900">Kalender Program Kerja php</h2>
             
             <div class="flex flex-col md:flex-row items-start md:items-center gap-3">
                 <!-- Month Selector (Hanya untuk View Bulanan) -->

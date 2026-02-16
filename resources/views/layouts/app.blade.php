@@ -304,6 +304,20 @@
             </span>
         </a>
 
+        <a href="{{ route('koorlaps.index') }}" 
+        class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('koorlaps.*') ? 'active' : '' }}"
+        :title="sidebarCollapsed ? 'Roles' : ''">
+            <div class="w-5 h-5 mr-3 flex-shrink-0">
+                <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 104 0M9 5a2 2 0 014 0m-5 7l2 2 4-4"/>
+                </svg>
+            </div>
+            <span class="sidebar-text font-medium" :class="sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'">
+                Koorlap
+            </span>
+        </a>
+
         <a href="{{ route('bidangs.index') }}" 
         class="menu-item flex items-center px-3 py-3 rounded-xl text-gray-700 group {{ request()->routeIs('bidangs.*') ? 'active' : '' }}"
         :title="sidebarCollapsed ? 'Bidang' : ''">

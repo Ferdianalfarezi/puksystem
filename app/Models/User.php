@@ -19,6 +19,7 @@ class User extends Authenticatable
         'password',
         'role_id',
         'bidang_id',
+        'koorlap_id',
         'departemen',
         'status',
     ];
@@ -45,12 +46,20 @@ class User extends Authenticatable
         return $this->belongsTo(Bidang::class);
     }
 
+    /**
+     * Relasi ke Koorlap (User punya 1 Koorlap)
+     */
+    public function koorlap(): BelongsTo
+    {
+        return $this->belongsTo(Koorlap::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';
     }
 
-    // ✅ NEW: Relations untuk Events
+    // Relations untuk Events
     public function createdEvents(): HasMany
     {
         return $this->hasMany(Event::class, 'created_by');
@@ -61,13 +70,13 @@ class User extends Authenticatable
         return $this->hasMany(EventAttendance::class);
     }
 
-    // ✅ NEW: Helper untuk generate QR Code data
+    // Helper untuk generate QR Code data
     public function getQrCodeDataAttribute(): string
     {
-        return $this->nik ?? ''; // NIK akan di-encode ke QR Code
+        return $this->nik ?? '';
     }
 
-    // ✅ NEW: Check if user attended specific event
+    // Check if user attended specific event
     public function hasAttendedEvent(int $eventId): bool
     {
         return $this->eventAttendances()->where('event_id', $eventId)->exists();

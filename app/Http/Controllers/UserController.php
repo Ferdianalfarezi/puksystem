@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Bidang;
+use App\Models\Koorlap;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -23,11 +24,12 @@ class UserController extends Controller
      */
     public function index(): View
     {
-        $users = User::with(['role', 'bidang'])->paginate(10);
+        $users = User::with(['role', 'bidang', 'koorlap'])->paginate(10);
         $roles = Role::all();
         $bidangs = Bidang::all();
+        $koorlaps = Koorlap::with('user')->get();
         
-        return view('users.index', compact('users', 'roles', 'bidangs'));
+        return view('users.index', compact('users', 'roles', 'bidangs', 'koorlaps'));
     }
 
     /**
@@ -37,8 +39,9 @@ class UserController extends Controller
     {
         $roles = Role::all();
         $bidangs = Bidang::all();
+        $koorlaps = Koorlap::with('user')->get();
         
-        return view('users.create', compact('roles', 'bidangs'));
+        return view('users.create', compact('roles', 'bidangs', 'koorlaps'));
     }
 
     /**
@@ -48,12 +51,13 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'nik' => ['required', 'string', 'max:50', 'unique:users'], // ✅ TAMBAHKAN
+            'nik' => ['required', 'string', 'max:50', 'unique:users'],
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', 'min:5'],
             'role_id' => ['required', 'exists:roles,id'],
             'bidang_id' => ['required', 'exists:bidangs,id'],
-            'departemen' => ['nullable', 'string', 'max:255'], // ✅ TAMBAHKAN
+            'koorlap_id' => ['nullable', 'exists:koorlaps,id'],
+            'departemen' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'in:active,not active']
         ], [
             'password.min' => 'Password minimal harus 5 karakter.',
@@ -65,12 +69,13 @@ class UserController extends Controller
         try {
             User::create([
                 'name' => $validated['name'],
-                'nik' => $validated['nik'], // ✅ TAMBAHKAN
+                'nik' => $validated['nik'],
                 'username' => $validated['username'],
                 'password' => Hash::make($validated['password']),
                 'role_id' => $validated['role_id'],
                 'bidang_id' => $validated['bidang_id'],
-                'departemen' => $validated['departemen'] ?? null, // ✅ TAMBAHKAN
+                'koorlap_id' => $validated['koorlap_id'] ?? null,
+                'departemen' => $validated['departemen'] ?? null,
                 'status' => $validated['status'],
             ]);
             
@@ -92,7 +97,7 @@ class UserController extends Controller
      */
     public function show(User $user): JsonResponse
     {
-        $user->load(['role', 'bidang']);
+        $user->load(['role', 'bidang', 'koorlap']);
         
         return response()->json([
             'success' => true,
@@ -107,8 +112,9 @@ class UserController extends Controller
     {
         $roles = Role::all();
         $bidangs = Bidang::all();
+        $koorlaps = Koorlap::with('user')->get();
         
-        return view('users.edit', compact('user', 'roles', 'bidangs'));
+        return view('users.edit', compact('user', 'roles', 'bidangs', 'koorlaps'));
     }
 
     /**
@@ -118,11 +124,12 @@ class UserController extends Controller
     {
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'nik' => ['required', 'string', 'max:50', 'unique:users,nik,' . $user->id], // ✅ TAMBAHKAN
+            'nik' => ['required', 'string', 'max:50', 'unique:users,nik,' . $user->id],
             'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
             'role_id' => ['required', 'exists:roles,id'],
             'bidang_id' => ['required', 'exists:bidangs,id'],
-            'departemen' => ['nullable', 'string', 'max:255'], // ✅ TAMBAHKAN
+            'koorlap_id' => ['nullable', 'exists:koorlaps,id'],
+            'departemen' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'in:active,not active']
         ];
 
@@ -143,11 +150,12 @@ class UserController extends Controller
         try {
             $updateData = [
                 'name' => $validated['name'],
-                'nik' => $validated['nik'], // ✅ TAMBAHKAN
+                'nik' => $validated['nik'],
                 'username' => $validated['username'],
                 'role_id' => $validated['role_id'],
                 'bidang_id' => $validated['bidang_id'],
-                'departemen' => $validated['departemen'] ?? null, // ✅ TAMBAHKAN
+                'koorlap_id' => $validated['koorlap_id'] ?? null,
+                'departemen' => $validated['departemen'] ?? null,
                 'status' => $validated['status'],
             ];
 

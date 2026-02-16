@@ -1,4 +1,4 @@
-<!-- CREATE Modal -->
+<!-- Create Modal -->
 <div id="createModal" class="fixed inset-0 hidden items-center justify-center z-50 p-4 bg-black bg-opacity-50 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all">
         <!-- Modal Header -->
@@ -27,7 +27,7 @@
                     <span class="text-red-500 text-sm error-message" id="error-create-name"></span>
                 </div>
 
-                <!-- ✅ NIK -->
+                <!-- NIK -->
                 <div class="col-span-2">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         NIK <span class="text-red-500">*</span>
@@ -80,7 +80,22 @@
                     <span class="text-red-500 text-sm error-message" id="error-create-bidang_id"></span>
                 </div>
 
-                <!-- ✅ Departemen -->
+                <!-- Koorlap -->
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Koorlap (Koordinator Lapangan) <span class="text-gray-400 text-xs">(Optional)</span>
+                    </label>
+                    <select id="createKoorlapId" name="koorlap_id"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-black focus:ring-2 focus:ring-black transition">
+                        <option value="">Select Koorlap (Optional)</option>
+                        @foreach($koorlaps as $koorlap)
+                            <option value="{{ $koorlap->id }}">{{ $koorlap->nama }} ({{ $koorlap->user->name }})</option>
+                        @endforeach
+                    </select>
+                    <span class="text-red-500 text-sm error-message" id="error-create-koorlap_id"></span>
+                </div>
+
+                <!-- Departemen -->
                 <div class="col-span-2">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         Departemen <span class="text-gray-400 text-xs">(Optional)</span>
