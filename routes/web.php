@@ -25,6 +25,7 @@ use App\Http\Controllers\DispensasiController;
 use App\Http\Controllers\SekretarisDispensasiController;
 use App\Http\Controllers\KetuaDispensasiController;
 use App\Http\Controllers\KoorlapController;
+use App\Http\Controllers\DanaSosialController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,10 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/dashboard-mobile', function () {
+    return view('dashboard-mobile');
+})->middleware(['auth'])->name('dashboard.mobile');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -197,6 +202,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [KasController::class, 'index'])->name('index');
         Route::get('/export', [KasController::class, 'export'])->name('export');
         Route::post('/setor', [KasController::class, 'setor'])->name('setor');
+    });
+
+    Route::middleware(['auth'])->prefix('dana-sosial')->name('dana-sosial.')->group(function () {
+        Route::get('/', [DanaSosialController::class, 'index'])->name('index');
+        Route::post('/', [DanaSosialController::class, 'store'])->name('store');
+        Route::get('/history', [DanaSosialController::class, 'history'])->name('history');
+        Route::get('/users-by-koorlap', [DanaSosialController::class, 'getUsersByKoorlap'])->name('users-by-koorlap');
+        Route::get('/{danaSosial}', [DanaSosialController::class, 'show'])->name('show');
+        Route::post('/{danaSosial}/approve', [DanaSosialController::class, 'approve'])->name('approve');
+        Route::post('/{danaSosial}/verify', [DanaSosialController::class, 'verify'])->name('verify');
     });
 });
 

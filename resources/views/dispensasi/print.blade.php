@@ -30,7 +30,7 @@
         }
         
         .header-logo {
-            width: 100px;
+            width: 150px;
             height: auto;
         }
         
@@ -68,7 +68,7 @@
         /* Double line border - garis atas */
         .header-border {
             border-top: 3px solid #000;
-            margin-top: 5px;
+            margin-top: -10px;
         }
         
         .header-border-inner {

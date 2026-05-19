@@ -137,127 +137,127 @@
     </div>
 
     <!-- Table Card -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full" id="usersTable">
-            <thead class="bg-gray-50 border-b border-gray-200">
-                <tr>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
-                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">NIK / QR Code</th> <!-- ✅ GABUNG -->
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Username</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Koorlap</th>
-                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200" id="usersTableBody">
-                @forelse($users as $index => $user)
-                    <tr class="hover:bg-gray-50 transition">
-                        <!-- No -->
-                        <td class="px-6 py-4 text-sm text-gray-900">{{ $loop->iteration }}</td>
-                        
-                        <!-- User -->
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-black flex items-center justify-center">
-                                        <span class="text-white text-sm font-medium">
-                                            {{ substr($user->name, 0, 1) }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        
-                        <!-- ✅ NIK & QR Code (Gabung dalam 1 kolom) -->
-                        <td class="px-6 py-4">
-                            <div class="flex flex-col items-center space-y-2">
-                                @if($user->nik)
-                                    <!-- QR Code -->
-                                    <div class="qr-code-container" id="qr-{{ $user->id }}" data-nik="{{ $user->nik }}"></div>
-                                    <!-- NIK Text -->
-                                    <div class="text-xs font-semibold text-gray-700">
-                                        {{ $user->nik }}
-                                    </div>
-                                @else
-                                    <span class="text-xs text-gray-400">No NIK</span>
-                                @endif
-                            </div>
-                        </td>
-                        
-                        <!-- Username -->
-                        <td class="px-6 py-4">
-                            <div class="text-sm font-semibold text-gray-900">{{ $user->username }}</div>
-                        </td>
-                        
-                        <!-- Role -->
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white">
-                                {{ $user->role->nama ?? 'No Role' }}
-                            </span>
-                        </td>
-                        
-                        <!-- Bidang -->
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900">{{ $user->bidang->nama ?? 'No Bidang' }}</div>
-                        </td>   
-                        
-                        <!-- Status -->
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $user->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ ucfirst($user->status) }}
-                            </span>
-                        </td>
-                        
-                        <!-- Joined -->
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $user->koorlap->nama ?? 'Belum set' }}
-                        </td>
-                        
-                        <!-- Aksi -->
-                        <td class="px-6 py-4">
-                            <div class="flex items-center justify-center space-x-2">
-                                <button onclick="openEditModal({{ $user->id }})"
-                                        class="bg-orange-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-orange-600 transition">
-                                    Edit
-                                </button>
-                                @if($user->id != Auth::id())
-                                <button onclick="deleteUser({{ $user->id }})"
-                                        class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-600 transition">
-                                    Delete
-                                </button>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                @empty
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full" id="usersTable">
+                <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <td colspan="9" class="px-6 py-16 text-center"> <!-- ✅ Update colspan jadi 9 -->
-                            <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
-                            </svg>
-                            <p class="mt-4 text-gray-600 font-semibold">No users found</p>
-                            <p class="text-gray-500 text-sm">Click "Add User" to create one</p>
-                        </td>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">NIK / QR Code</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Username</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Bidang</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Koorlap</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
                     </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Footer: Pagination -->
-    @if($users->hasPages())
-        <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
-            {{ $users->links() }}
+                </thead>
+                <tbody class="divide-y divide-gray-200" id="usersTableBody">
+                    @forelse($users as $index => $user)
+                        <tr class="hover:bg-gray-50 transition">
+                            <!-- No -->
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ $loop->iteration }}</td>
+                            
+                            <!-- User -->
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-black flex items-center justify-center">
+                                            <span class="text-white text-sm font-medium">
+                                                {{ substr($user->name, 0, 1) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- NIK & QR Code -->
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col items-center space-y-2">
+                                    @if($user->nik)
+                                        <!-- QR Code -->
+                                        <div class="qr-code-container" id="qr-{{ $user->id }}" data-nik="{{ $user->nik }}"></div>
+                                        <!-- NIK Text -->
+                                        <div class="text-xs font-semibold text-gray-700">
+                                            {{ $user->nik }}
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-gray-400">No NIK</span>
+                                    @endif
+                                </div>
+                            </td>
+                            
+                            <!-- Username -->
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-semibold text-gray-900">{{ $user->username }}</div>
+                            </td>
+                            
+                            <!-- Role -->
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white">
+                                    {{ $user->role->nama ?? 'No Role' }}
+                                </span>
+                            </td>
+                            
+                            <!-- Bidang -->
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">{{ $user->bidang->nama ?? 'No Bidang' }}</div>
+                            </td>   
+                            
+                            <!-- Status -->
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $user->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ ucfirst($user->status) }}
+                                </span>
+                            </td>
+                            
+                            <!-- Koorlap -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $user->koorlap->nama ?? 'Belum set' }}
+                            </td>
+                            
+                            <!-- Aksi -->
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <button onclick="openEditModal({{ $user->id }})"
+                                            class="bg-orange-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-orange-600 transition">
+                                        Edit
+                                    </button>
+                                    @if($user->id != Auth::id())
+                                    <button onclick="deleteUser({{ $user->id }})"
+                                            class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-600 transition">
+                                        Delete
+                                    </button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="px-6 py-16 text-center">
+                                <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                                </svg>
+                                <p class="mt-4 text-gray-600 font-semibold">No users found</p>
+                                <p class="text-gray-500 text-sm">Click "Add User" to create one</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-    @endif
-</div>
+
+        <!-- Footer: Pagination -->
+        @if($users->hasPages())
+            <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
+                {{ $users->links() }}
+            </div>
+        @endif
+    </div>
 </div>
 
 <!-- Include Create Modal -->
@@ -403,7 +403,7 @@
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
-            const statusCell = row.cells[5]; // Status column
+            const statusCell = row.cells[6]; // Status column (index 6)
             
             if (statusFilter === '' || statusCell.textContent.toLowerCase().includes(statusFilter)) {
                 row.style.display = '';
@@ -422,6 +422,7 @@
         // Reset Select2
         $('#createRoleId').val('').trigger('change');
         $('#createBidangId').val('').trigger('change');
+        $('#createKoorlapId').val('').trigger('change');
         
         // Prevent body scroll
         document.body.style.overflow = 'hidden';
@@ -439,46 +440,60 @@
     }
 
     async function openEditModal(id) {
-    try {
-        const response = await fetch(`/users/${id}`);
-        const data = await response.json();
-        
-        if (data.success) {
-            const user = data.data;
-            document.getElementById('editUserId').value = user.id;
-            document.getElementById('editName').value = user.name;
-            document.getElementById('editNik').value = user.nik || ''; // ✅ TAMBAH
-            document.getElementById('editUsername').value = user.username;
-            document.getElementById('editDepartemen').value = user.departemen || ''; // ✅ TAMBAH
-            document.getElementById('editStatus').value = user.status;
-            
-            // Set Select2 values
-            $('#editRoleId').val(user.role_id).trigger('change');
-            $('#editBidangId').val(user.bidang_id).trigger('change');
-            
-            clearErrors();
-            
-            const modal = document.getElementById('editModal');
-            
-            // Prevent body scroll
-            document.body.style.overflow = 'hidden';
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            // Force reflow
-            void modal.offsetWidth;
-            
-            // Trigger animation
-            requestAnimationFrame(() => {
-                modal.classList.add('active');
+        try {
+            const response = await fetch(`/users/${id}`, {
+                headers: {
+                    'Accept': 'application/json',
+                }
             });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                const user = data.data;
+                document.getElementById('editUserId').value = user.id;
+                document.getElementById('editName').value = user.name;
+                document.getElementById('editNik').value = user.nik || '';
+                document.getElementById('editUsername').value = user.username;
+                document.getElementById('editDepartemen').value = user.departemen || '';
+                document.getElementById('editStatus').value = user.status;
+                
+                // Clear password fields
+                document.getElementById('editPassword').value = '';
+                document.getElementById('editPasswordConfirmation').value = '';
+                
+                // Set Select2 values
+                $('#editRoleId').val(user.role_id).trigger('change');
+                $('#editBidangId').val(user.bidang_id).trigger('change');
+                $('#editKoorlapId').val(user.koorlap_id).trigger('change');
+                
+                clearErrors();
+                
+                const modal = document.getElementById('editModal');
+                
+                // Prevent body scroll
+                document.body.style.overflow = 'hidden';
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                // Force reflow
+                void modal.offsetWidth;
+                
+                // Trigger animation
+                requestAnimationFrame(() => {
+                    modal.classList.add('active');
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire('Error!', 'Gagal memuat data user', 'error');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        Swal.fire('Error!', 'Failed to load user data', 'error');
     }
-}
 
     function closeCreateModal() {
         const modal = document.getElementById('createModal');
@@ -495,6 +510,7 @@
             // Reset Select2
             $('#createRoleId').val('').trigger('change');
             $('#createBidangId').val('').trigger('change');
+            $('#createKoorlapId').val('').trigger('change');
             
             // Restore body scroll
             document.body.style.overflow = '';
@@ -516,6 +532,7 @@
             // Reset Select2
             $('#editRoleId').val('').trigger('change');
             $('#editBidangId').val('').trigger('change');
+            $('#editKoorlapId').val('').trigger('change');
             
             // Restore body scroll
             document.body.style.overflow = '';
@@ -609,6 +626,33 @@
 
     function clearErrors() {
         document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+        // Remove error styling from inputs
+        document.querySelectorAll('.border-red-500').forEach(el => {
+            el.classList.remove('border-red-500');
+            el.classList.add('border-gray-300');
+        });
+    }
+
+    // ✅ Function untuk menampilkan error di field yang sesuai
+    function showFieldErrors(errors, prefix) {
+        Object.keys(errors).forEach(key => {
+            const errorElement = document.getElementById(`error-${prefix}-${key}`);
+            const inputElement = document.getElementById(`${prefix}${capitalizeFirst(key)}`);
+            
+            if (errorElement) {
+                errorElement.textContent = errors[key][0];
+            }
+            
+            // Add red border to input
+            if (inputElement) {
+                inputElement.classList.remove('border-gray-300');
+                inputElement.classList.add('border-red-500');
+            }
+        });
+    }
+
+    function capitalizeFirst(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1).replace(/_([a-z])/g, (g) => g[1].toUpperCase());
     }
 
     // Initialize Select2
@@ -632,6 +676,13 @@
             dropdownParent: $('#createModal')
         });
 
+        $('#createKoorlapId').select2({
+            placeholder: "Select Koorlap (Optional)", 
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#createModal')
+        });
+
         // Edit modal
         $('#editRoleId').select2({
             placeholder: "Select Role",
@@ -646,31 +697,45 @@
             width: '100%',
             dropdownParent: $('#editModal')
         });
+
+        $('#editKoorlapId').select2({
+            placeholder: "Select Koorlap (Optional)",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#editModal')
+        });
     }
 
-    // Submit Create Form
+    // ✅ Submit Create Form - dengan proper error handling
     document.getElementById('createForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         clearErrors();
 
         const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Disable button & show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 inline" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Menyimpan...';
 
         try {
             const response = await fetch('/users', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
                 },
                 body: formData
             });
 
             const data = await response.json();
 
-            if (data.success) {
+            if (response.ok && data.success) {
                 closeCreateModal();
                 Swal.fire({
                     icon: 'success',
-                    title: 'Success!',
+                    title: 'Berhasil!',
                     text: data.message,
                     showConfirmButton: false,
                     timer: 1500
@@ -678,22 +743,38 @@
                     location.reload();
                 });
             } else {
+                // Handle validation errors
                 if (data.errors) {
-                    Object.keys(data.errors).forEach(key => {
-                        const errorElement = document.getElementById(`error-create-${key}`);
-                        if (errorElement) {
-                            errorElement.textContent = data.errors[key][0];
-                        }
+                    showFieldErrors(data.errors, 'create');
+                    
+                    // Show summary in toast
+                    const errorMessages = Object.values(data.errors).flat();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal!',
+                        html: errorMessages.map(msg => `• ${msg}`).join('<br>'),
+                        confirmButtonColor: '#000'
                     });
+                } else {
+                    Swal.fire('Error!', data.message || 'Terjadi kesalahan', 'error');
                 }
             }
         } catch (error) {
             console.error('Error:', error);
-            Swal.fire('Error!', 'Something went wrong!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Terjadi kesalahan sistem. Silakan coba lagi.',
+                confirmButtonColor: '#000'
+            });
+        } finally {
+            // Re-enable button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
         }
     });
 
-    // Submit Edit Form
+    // ✅ Submit Edit Form - dengan proper error handling
     document.getElementById('editForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         clearErrors();
@@ -701,23 +782,31 @@
         const formData = new FormData(this);
         const id = document.getElementById('editUserId').value;
         formData.append('_method', 'PUT');
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Disable button & show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 inline" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Menyimpan...';
 
         try {
             const response = await fetch(`/users/${id}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
                 },
                 body: formData
             });
 
             const data = await response.json();
 
-            if (data.success) {
+            if (response.ok && data.success) {
                 closeEditModal();
                 Swal.fire({
                     icon: 'success',
-                    title: 'Success!',
+                    title: 'Berhasil!',
                     text: data.message,
                     showConfirmButton: false,
                     timer: 1500
@@ -725,29 +814,45 @@
                     location.reload();
                 });
             } else {
+                // Handle validation errors
                 if (data.errors) {
-                    Object.keys(data.errors).forEach(key => {
-                        const errorElement = document.getElementById(`error-edit-${key}`);
-                        if (errorElement) {
-                            errorElement.textContent = data.errors[key][0];
-                        }
+                    showFieldErrors(data.errors, 'edit');
+                    
+                    // Show summary in toast
+                    const errorMessages = Object.values(data.errors).flat();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal!',
+                        html: errorMessages.map(msg => `• ${msg}`).join('<br>'),
+                        confirmButtonColor: '#000'
                     });
+                } else {
+                    Swal.fire('Error!', data.message || 'Terjadi kesalahan', 'error');
                 }
             }
         } catch (error) {
             console.error('Error:', error);
-            Swal.fire('Error!', 'Something went wrong!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Terjadi kesalahan sistem. Silakan coba lagi.',
+                confirmButtonColor: '#000'
+            });
+        } finally {
+            // Re-enable button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
         }
     });
 
-    // Submit Import Form
+    // ✅ Submit Import Form - dengan proper error handling
     document.getElementById('importForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         clearErrors();
 
         const fileInput = document.getElementById('excelFile');
         if (!fileInput.files[0]) {
-            document.getElementById('error-import-file').textContent = 'Please select a file';
+            document.getElementById('error-import-file').textContent = 'Pilih file terlebih dahulu';
             return;
         }
 
@@ -759,6 +864,7 @@
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
                 },
                 body: formData
             });
@@ -768,12 +874,12 @@
 
             const data = await response.json();
 
-            if (data.success) {
+            if (response.ok && data.success) {
                 hideProgress();
                 closeImportModal();
                 Swal.fire({
                     icon: 'success',
-                    title: 'Success!',
+                    title: 'Berhasil!',
                     text: data.message,
                     showConfirmButton: false,
                     timer: 1500
@@ -785,36 +891,48 @@
                 if (data.errors) {
                     let errorMessage = '';
                     if (Array.isArray(data.errors)) {
-                        errorMessage = data.errors.join('\n');
+                        errorMessage = data.errors.join('<br>');
+                    } else if (typeof data.errors === 'object') {
+                        errorMessage = Object.values(data.errors).flat().join('<br>');
                     } else {
                         errorMessage = data.message;
                     }
                     
                     Swal.fire({
                         icon: 'error',
-                        title: 'Import Failed!',
-                        html: '<pre style="text-align: left; font-size: 12px;">' + errorMessage + '</pre>',
-                        width: '600px'
+                        title: 'Import Gagal!',
+                        html: '<div style="text-align: left; font-size: 13px; max-height: 300px; overflow-y: auto;">' + errorMessage + '</div>',
+                        width: '600px',
+                        confirmButtonColor: '#000'
                     });
+                } else {
+                    Swal.fire('Error!', data.message || 'Import gagal', 'error');
                 }
             }
         } catch (error) {
             clearInterval(progressInterval);
             hideProgress();
             console.error('Error:', error);
-            Swal.fire('Error!', 'Something went wrong!', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Terjadi kesalahan sistem. Silakan coba lagi.',
+                confirmButtonColor: '#000'
+            });
         }
     });
 
+    // ✅ Delete User - dengan proper error handling
     async function deleteUser(id) {
         const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: "This user will be deleted!",
+            title: 'Yakin hapus user ini?',
+            text: "Data yang dihapus tidak dapat dikembalikan!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#000',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
         });
 
         if (result.isConfirmed) {
@@ -823,15 +941,16 @@
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
                     }
                 });
 
                 const data = await response.json();
 
-                if (data.success) {
+                if (response.ok && data.success) {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Deleted!',
+                        title: 'Terhapus!',
                         text: data.message,
                         showConfirmButton: false,
                         timer: 1500
@@ -839,14 +958,16 @@
                         location.reload();
                     });
                 } else {
-                    Swal.fire('Error!', data.message, 'error');
+                    Swal.fire('Error!', data.message || 'Gagal menghapus user', 'error');
                 }
             } catch (error) {
-                Swal.fire('Error!', 'Failed to delete user!', 'error');
+                console.error('Error:', error);
+                Swal.fire('Error!', 'Gagal menghapus user!', 'error');
             }
         }
     }
 
+    // ESC key to close modals
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeCreateModal();

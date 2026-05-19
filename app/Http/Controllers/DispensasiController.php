@@ -188,11 +188,10 @@ class DispensasiController extends Controller
         ]);
     }
 
-    public function submit($id)
+ public function submit($id)
 {
     $dispensasi = Dispensasi::findOrFail($id);
     
-    // Cek status harus draft
     if ($dispensasi->status !== 'draft') {
         return response()->json([
             'success' => false,
@@ -200,9 +199,10 @@ class DispensasiController extends Controller
         ], 422);
     }
     
-    // Update status ke menunggu approval sekretaris
     $dispensasi->update([
-        'status' => 'menunggu_approval_sekretaris'
+        'status' => 'menunggu_approval_sekretaris',
+        'submitted_by' => Auth::id(),   // tambah ini
+        'submitted_at' => now(),        // tambah ini
     ]);
     
     return response()->json([
